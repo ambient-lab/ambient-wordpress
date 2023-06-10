@@ -3,10 +3,11 @@
 ## project.env
 
 - Git で管理しているファイル
-    - テンプレートプロジェクトではGit管理はしないので、プロジェクト開始時に作成しGit管理対象に含める
+  - テンプレートプロジェクトでは Git 管理はしないので、プロジェクト開始時に作成し Git 管理対象に含める
 - プロジェクト直下にプロジェクト固有の設定を記述
 
 例）
+
 ```toml
 # AWS Region
 AWS_REGION=ap-northeast-1
@@ -17,7 +18,7 @@ AWS_SSO_START_URL=https://XXXXXXXX.awsapps.com/start
 AWS_SSO_REGION=ap-northeast-1
 AWS_SSO_ROLE_NAME=AdministratorAccess
 
-# AWS MFA 
+# AWS MFA
 #AWS_MFA_ASSUME_ROLE=arn:aws:iam::XXXXXXXX:role/XXXXXXXX
 
 # VSCode Theme (default Dark+)
@@ -25,6 +26,7 @@ IDE_THEME=
 ```
 
 ### project.{envname}.env
+
 `project.prod.env`など環境固有の設定ファイル  
 特定環境でデプロイ先が変わる場合などに利用
 
@@ -98,3 +100,5 @@ $ make login
 ```bash
 $ make login ENV=prod
 ```
+
+テスト 2
