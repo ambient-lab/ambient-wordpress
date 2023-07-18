@@ -22,6 +22,3 @@ if [ "${GITHUB_REMOTE_ORIGIN_URL}" != '' ]; then
   git config --global remote.origin.url $GITHUB_REMOTE_ORIGIN_URL
   echo "Finished setting up git config"
 fi
-
-# TestInfraの実行
-py.test -v $FEATURE_DIR/test.py

@@ -5,15 +5,24 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
   "features": {
     // root feature
-    "ghcr.io/devcontainers/features/aws-cli": {},
-    "ghcr.io/devcontainers/features/github-cli": {},
-    "ghcr.io/eitsupi/devcontainer-features/jq-likes": {},
-    "ghcr.io/devcontainers/features/python": {
-      "version": 3.9
+    "ghcr.io/devcontainers/features/aws-cli:1": {
+      "version": "1.0.6"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "2.13.1"
+    },
+    "ghcr.io/eitsupi/devcontainer-features/jq-likes:1": {
+      "jqVersion": "jq-1.6"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.9.17"
     },
     "./features/root": {}
   },
-  "postCreateCommand": "find /workspace/.devcontainer/features -name 'post-create-command.sh' -exec bash {} \\;",
+  "postCreateCommand": {
+    "main": "find /workspace/.devcontainer/features -name 'post-create-command.sh' -exec bash {} \\;",
+    "test": "py.test -v $FEATURE_DIR/test.py"
+  },
   "customizations": {
     "vscode": {
       "settings": {},
