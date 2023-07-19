@@ -6,10 +6,10 @@
   "features": {
     // root feature
     "ghcr.io/devcontainers/features/aws-cli:1": {
-      "version": "1.0.6"
+      "version": "2.13.1"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "2.13.1"
+      "version": "2.32.0"
     },
     "ghcr.io/eitsupi/devcontainer-features/jq-likes:1": {
       "jqVersion": "jq-1.6"
@@ -21,7 +21,7 @@
   },
   "postCreateCommand": {
     "main": "find /workspace/.devcontainer/features -name 'post-create-command.sh' -exec bash {} \\;",
-    "test": "py.test -v $FEATURE_DIR/test.py"
+    "test": "py.test -v .devcontainer/features/root/test.py"
   },
   "customizations": {
     "vscode": {
