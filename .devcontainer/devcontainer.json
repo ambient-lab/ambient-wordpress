@@ -20,8 +20,8 @@
     "./features/root": {}
   },
   "postCreateCommand": {
-    "main": "find /workspace/.devcontainer/features -name 'post-create-command.sh' -exec bash {} \\;",
-    "test": "py.test -v .devcontainer/features/root/test.py"
+    "main": "find /workspace/.devcontainer/features -name 'post-create-command-main.sh' -exec bash {} \\;",
+    "test": "find /workspace/.devcontainer/features -name 'post-create-command-test.py' -exec py.test -v  {} \\;"
   },
   "customizations": {
     "vscode": {
