@@ -342,3 +342,7 @@ cython_debug/
 .env.local
 user.env
 project.env
+
+# githooks directory
+.githooks/*
+!/.githooks/commit-msg

@@ -9,6 +9,7 @@ FEATURE_DIR=$(dirname $0)
 git config --global push.default current
 git config --global --add safe.directory /workspace
 git config --global pull.ff only
+git config --global commit.template .gitmessage
 if [ "${GIT_USER_EMAIL}" != '' ] && [ "${GIT_USER_NAME}" != '' ]; then
   echo "Setting up a git config(user) ..."
   git config --global user.email "${GIT_USER_EMAIL}"
@@ -22,3 +23,7 @@ if [ "${GITHUB_REMOTE_ORIGIN_URL}" != '' ]; then
   git config --global remote.origin.url $GITHUB_REMOTE_ORIGIN_URL
   echo "Finished setting up git config"
 fi
+
+# Git hookの設定
+git config --local core.hooksPath .githooks
+chmod -R +x .githooks/
