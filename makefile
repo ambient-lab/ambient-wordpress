@@ -1,4 +1,3 @@
-include project.env
 SHELL=/bin/bash
 
 login: configure sso-login mfa finally
