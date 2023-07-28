@@ -1,10 +1,7 @@
 ---
 name: Custom issue template
-about: Describe this issue template's purpose here.
-title: ''
-labels: ''
-assignees: ''
-
+about: ここにこの問題テンプレートの目的を説明します。
+title: ""
+labels: ""
+assignees: ""
 ---
-
-

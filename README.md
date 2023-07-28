@@ -1,33 +1,17 @@
-# 環境変数設定ファイル
+# 環境変数設定について
 
-## project.env
+Cosespaces の暗号化されたシークレットを利用して シークレット情報（環境変数）を読み込みます。
+従来だと、Cosespaces のビルド後に、`.env`ファイルを用意して参照する運用としていましたが、リポジトリ単位で Cosespaces 　に設定したシークレット情報を参照するようにします。
 
-- Git で管理しているファイル
-  - テンプレートプロジェクトでは Git 管理はしないので、プロジェクト開始時に作成し Git 管理対象に含める
-- プロジェクト直下にプロジェクト固有の設定を記述
+## Codespaces secrets 設定内容
 
-例）
+- AWS_REGION
+- AWS_SSO_ACCOUNT_ID
+- AWS_SSO_REGION
+- AWS_SSO_ROLE_NAME
+- AWS_SSO_START_URL
 
-```toml
-# AWS Region
-AWS_REGION=ap-northeast-1
-
-# AWS SSO
-AWS_SSO_ACCOUNT_ID=XXXXXXXX
-AWS_SSO_START_URL=https://XXXXXXXX.awsapps.com/start
-AWS_SSO_REGION=ap-northeast-1
-AWS_SSO_ROLE_NAME=AdministratorAccess
-
-# AWS MFA
-#AWS_MFA_ASSUME_ROLE=arn:aws:iam::XXXXXXXX:role/XXXXXXXX
-
-# VSCode Theme (default Dark+)
-IDE_THEME=
-```
-
-### project.{envname}.env
-
-`project.prod.env`など環境固有の設定ファイル  
+環境固有のシークレット情報に関しては、 `PRD_AWS_REGION` や `STG_AWS_REGION`など の接頭辞として Cosespaces のシークレット情報を設定します。
 特定環境でデプロイ先が変わる場合などに利用
 
 ## user.env
@@ -44,15 +28,6 @@ GIT_USER_NAME=<user_name>
 # AWS 認証パターン別の環境変数の設定
 
 ## AWS SSO パターン
-
-### project.env
-
-```toml
-AWS_SSO_ACCOUNT_ID=<account_id>
-AWS_SSO_START_URL=https://xxxxxxxx/start
-AWS_SSO_REGION=<region>
-AWS_SSO_ROLE_NAME=<role_name>
-```
 
 ## AWS Credentials パターン
 
