@@ -3,9 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - test
-    types:
-      - closed
+      # - test
+      - 40-リリースノート自動化の検証
+    # types:
+    #   - closed
 jobs:
   build:
     name: Create Release
