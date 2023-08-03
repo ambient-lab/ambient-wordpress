@@ -1,0 +1,30 @@
+name: Create Release For root-dev
+on:
+  push:
+    branches:
+      - test
+    types:
+      - closed
+jobs:
+  build:
+    name: Create Release For root-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: bump_version
+        uses: phips28/gh-action-bump-version@master
+        with:
+          tag-prefix: "v"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version.outputs.tag }}
+          release_name: Release ${{ steps.bump_version.outputs.tag }}
+          draft: false
+          prerelease: false
