@@ -1,9 +1,5 @@
 name: Create Release
 
-permissions:
-  id-token: write
-  contents: read
-
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -15,6 +11,11 @@ on:
       - 40-リリースノート自動化の検証
     # types:
     #   - closed
+
+permissions:
+  id-token: write
+  contents: read
+  actions: write
 
 jobs:
   build:
