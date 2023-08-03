@@ -1,4 +1,4 @@
-name: Create Release For root-dev
+name: Create Release
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
       - closed
 jobs:
   build:
-    name: Create Release For root-dev
+    name: Create Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
