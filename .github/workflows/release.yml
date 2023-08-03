@@ -1,8 +1,6 @@
 name: Create Release
 on:
   workflow_dispatch:
-    branches:
-      - 40-リリースノート自動化の検証
   push:
     branches:
       - test
