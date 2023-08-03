@@ -12,10 +12,7 @@ on:
     # types:
     #   - closed
 
-permissions:
-  id-token: write
-  contents: read
-  actions: write
+permissions: read-all|write-all
 
 jobs:
   build:
