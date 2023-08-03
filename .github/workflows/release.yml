@@ -1,4 +1,12 @@
 name: Create Release
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 on:
   workflow_dispatch:
   push:
@@ -7,6 +15,7 @@ on:
       - 40-リリースノート自動化の検証
     # types:
     #   - closed
+
 jobs:
   build:
     name: Create Release
@@ -28,5 +37,3 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
