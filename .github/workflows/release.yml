@@ -20,7 +20,7 @@ jobs:
         with:
           default_bump: "minor"
           custom_tag: "test"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
