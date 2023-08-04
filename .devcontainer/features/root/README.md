@@ -132,7 +132,7 @@ Codespaces を利用するメリットとして下記があります。
 
 - リポジトリごとに Project を用意するため Project で機能開発やバグ修正などを管理します。
 - Project にて、Issue を起票し、下記の通りどういったことをするのかタイトルや説明を追記します。
-- ※ Issue が一つも存在しない場合は Project にリポジトリが表示されていない場合はリポジトリの Issue ページから Issue を起票してください。
+- ※ Issue が一つも存在しない場合は Project にリポジトリが表示されていないので、リポジトリの Issue ページから Issue を起票してください。
   <img src="doc/images/github/001.png">
   - `.github/ISSUE_TEMPLATE配下に`に issue 起票のテンプレートを用意してます。
     ```
