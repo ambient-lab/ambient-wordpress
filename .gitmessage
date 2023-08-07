@@ -1,10 +1,17 @@
 
 # ==== コミットメッセージフォーマット(テンプレート) ====
-<Emoji> #<Issue Number> <Title>
-# 例) :sparkles: #1 ログイン機能を追加
+<Version Prefix>: #<Issue Number> <Title>
+# 例) fix: #1 ログイン機能を追加
 #
 # Commit body...
 # 例) ログイン機能を追加しました。
+
+# ==== Version ====
+# | Prefix | Release Type | Increment |
+# | --- | --- | --- | 
+# | fix | Patch Release | v0.0.1 |
+# | feat | Mainor Release | v0.1.0 |
+# | perf | Major Relase | v1.0.0 |
 
 # ==== Emojis ====
 # ✏️  :pencil2: ドキュメンテーションの作成

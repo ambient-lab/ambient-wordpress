@@ -1,34 +1,36 @@
-name: Create Release
+name: Auto Create Release
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches:
-      # - test
-      - 40-リリースノート自動化の検証
-    # types:
-    #   - closed
+      - main
+    types:
+      - closed
 
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
-    permissions: write-all
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Bump version and push tag
-        id: bump_version
+        id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        id: create_release
+          release_branches: "main"
+          pre_release_branches: "main"
+          append_to_pre_release_tag: "rc"
+          default_dump: "patch"
+      - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
