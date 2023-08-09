@@ -263,29 +263,30 @@ fork 元(dev-root 等)のリポジトリに更新があった場合に取り込�
 手順の詳細は下記のリンクを確認してください。
 [WebUI からの取り込み手順](https://docs.github.com/ja/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork?platform=mac#syncing-a-fork-branch-from-the-web-ui)
 
-※コンフリクトがある場合はこちらの手順では取り込むことはできないので、下記に記載されているようにブランチを作りそちらから取り込む必要があります
+※コンフリクトがある場合はこちらの手順では取り込むことはできないので、下記に記載されているようにプルリクを作りそちらから取り込む必要があります
 
-### ブランチを作成してフォークのブランチを取り込む
+### プルリクからフォークのブランチを取り込む
+
+#### コンフリクトの確認
 
 1. 環境構築の手順から取り込み用のブランチを作成
    [ブランチの作成](#codespaces-起動手順)
-2. ブランチから下記手順でコマンドを実行する
+2. 取り込み用ブランチに向けて、fork 元の develop をマージするためのプルリクを作成する画面でコンフリクトの確認を行う
+   - 「compare across forks」を押すことでリポジトリから指定できるようになります。
+     <img src="doc/images/github/005.png">
 
-   1. upstream の登録を確認
+##### コンフリクトが無い場合
 
-      - `git remote -v`
+1. コンフリクトの確認を行った状態から、そのままプルリクエストを作成、マージをしてもらう
 
-   2. 登録されていない場合は upstream 先の登録
+2. 取り込み用ブランチから取り込みたいリポジトリの develop に向けてプルリクを作成し、マージしてもらう
 
-      - `git remote add upstream https://github.com/ambient-lab/dev-{xxx}.git`
-      - {xxx}の部分は、fork 元の取り込むリポジトリを指定してください
+##### コンフリクトがある場合
 
-   3. upstream を最新の状態にする
-
-      - `git fetch upstream`
-
-   4. ブランチに fork 元の develop を取り込む
-
-      - `git merge upstream/develop`
-
-3. コンフリクトを解消してプルリクを作成、マージしてもらう
+1. 取り込み用ブランチで codespaces を立ち上げ、下記コマンドを実行しコンフリクトを解消する
+   1. git checkout -b ambient-lab-develop {取り込み用ブランチ}
+   2. git pull --rebese https://github.com/ambient-lab/dev-{fork元のリポジトリ}.git develop
+   3. git checkout {取り込み用ブランチ}
+   4. git merge --no-ff ambient-lab-develop
+   5. git push origin {取り込み用ブランチ}
+2. 取り込み用ブランチから取り込みたいリポジトリの develop に向けてプルリクを作成し、マージしてもらう
