@@ -11,7 +11,7 @@
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "2.32.0"
     },
-    "ghcr.io/eitsupi/devcontainer-features/jq-likes:1": {
+    "ghcr.io/eitsupi/devcontainer-features/jq-likes:1.0.1": {
       "jqVersion": "jq-1.6"
     },
     "ghcr.io/devcontainers/features/python:1": {
