@@ -284,9 +284,10 @@ fork 元(dev-root 等)のリポジトリに更新があった場合に取り込�
 
 1. 取り込み用ブランチで codespaces を立ち上げ、下記コマンドを実行しコンフリクトを解消する
    1. git checkout -b ambient-lab-develop {取り込み用ブランチ}
-   2. git pull --rebese https://github.com/ambient-lab/dev-{fork元のリポジトリ}.git develop
-   3. git checkout {取り込み用ブランチ}
+   2. git pull --rebase https://github.com/ambient-lab/dev-{fork元のリポジトリ}.git develop
+   3. git checkout -
    4. git merge --no-ff ambient-lab-develop
+      a. `fatal: refusing to merge unrelated histories`が発生した場合は`--allow-unrelated-histories`のオプションが必要になります。
    5. git push origin {取り込み用ブランチ}
 2. 取り込み用ブランチから取り込みたいリポジトリの develop に向けてプルリクを作成し、マージしてもらう
 
