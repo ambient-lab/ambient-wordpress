@@ -1,15 +1,5 @@
 #!/bin/bash
-PRODUCTION_ENV="prod"
-if [ -n "$1" ] && [ "$1" == "$PRODUCTION_ENV"] && [ "${PROD_AWS_SSO_ACCOUNT_ID}" != '' ]; then
-  echo "Configure production aws sso ..."
-  aws configure set sso_start_url $PROD_AWS_SSO_START_URL --profile default
-  aws configure set sso_region $PROD_AWS_SSO_REGION --profile default
-  aws configure set sso_account_id $PROD_AWS_SSO_ACCOUNT_ID --profile default
-  aws configure set sso_role_name $PROD_AWS_SSO_ROLE_NAME --profile default
-  aws configure set region $PROD_AWS_REGION --profile default
-  aws configure set output json --profile default
-  echo "Configured production aws sso"
-elif [ "${AWS_SSO_ACCOUNT_ID}" != '' ]; then
+if [ "${AWS_SSO_ACCOUNT_ID}" != '' ]; then
   echo "Configure aws sso ..."
   aws configure set sso_start_url $AWS_SSO_START_URL --profile default
   aws configure set sso_region $AWS_SSO_REGION --profile default
