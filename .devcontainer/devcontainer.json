@@ -17,7 +17,9 @@
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.9.17"
     },
-    "./features/root": {}
+    "./features/root": {},
+    // custom feature
+    "./features/custom": {}
   },
   "postCreateCommand": {
     "main": "find /workspace/.devcontainer/features -name 'post-create-command-main.sh' -exec bash {} \\;",
