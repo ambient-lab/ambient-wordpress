@@ -54,7 +54,7 @@ ambient-tmpl-root
 
 - Material UI(MUI): UI コンポーネント
 
-### [App テンプレート](https://github.com/ambient-lab/dev-app)
+### [App テンプレート](https://github.com/ambient-lab/ambient-tmpl-app)
 
 **ambient-tmpl-root** を fork して作られた [Expo](https://expo.dev/) を利用するスマホアプリシステムのテンプレート
 
@@ -65,7 +65,7 @@ PoC 開発などデザインを重視しない場合は MUI を利用する
 - Amplify: バックエンドフレームワーク
 - MUI: UI コンポーネント （※要件的に MUI が許容できる場合)
 
-### [Infra テンプレート](https://github.com/ambient-lab/dev-infra)
+### [Infra テンプレート](https://github.com/ambient-lab/ambient-tmpl-infra)
 
 **ambient-tmpl-root** を fork して作られたインフラ構築のテンプレート
 インフラや API、バッチなどの UI が伴わない開発に利用する
@@ -297,7 +297,7 @@ fork 元のリポジトリに更新があった場合に取り込みの作業が
 
 1. 取り込み用ブランチで codespaces を立ち上げ、下記コマンドを実行しコンフリクトを解消する
    1. git checkout -b ambient-lab-develop {取り込み用ブランチ}
-   2. git pull --rebase https://github.com/ambient-lab/dev-{fork元のリポジトリ}.git develop
+   2. git pull --rebase https://github.com/ambient-lab/ambient-tmpl-{fork元のリポジトリ}.git develop
    3. git checkout {取り込み用ブランチ}
    4. git merge --no-ff ambient-lab-develop
       a. `fatal: refusing to merge unrelated histories`が発生した場合は`--allow-unrelated-histories`のオプションが必要になります。

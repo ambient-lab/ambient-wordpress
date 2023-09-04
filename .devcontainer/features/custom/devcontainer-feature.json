@@ -1,0 +1,20 @@
+{
+  "name": "ambient-lab custom",
+  "id": "custom",
+  "version": "5.1",
+  "description": "ambient-lab custom feature",
+  "containerEnv": {
+    "TZ": "Asia/Tokyo"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": []
+    }
+  },
+  "installsAfter": ["./features/root"],
+  "postCreateCommand": {
+    "main": "find /workspace/.devcontainer/features/custom -name 'post-create-command-main.sh' -exec bash {} \\;",
+    "test": "find /workspace/.devcontainer/features/custom -name 'post-create-command-test.py' -exec py.test -v  {} \\;"
+  }
+}
