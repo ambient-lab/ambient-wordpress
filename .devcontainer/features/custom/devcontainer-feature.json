@@ -12,9 +12,5 @@
       "extensions": []
     }
   },
-  "installsAfter": ["./features/root"],
-  "postCreateCommand": {
-    "main": "find /workspace/.devcontainer/features/custom -name 'post-create-command-main.sh' -exec bash {} \\;",
-    "test": "find /workspace/.devcontainer/features/custom -name 'post-create-command-test.py' -exec py.test -v  {} \\;"
-  }
+  "installsAfter": ["./features/root"]
 }

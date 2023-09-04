@@ -18,13 +18,13 @@
 ambient-tmpl-root
 ├── ambient-tmpl-web
 │   ├── ambient-tmpl-web-tw
-│   │   └── {案件名}-web
+│   │   └── {プロジェクト名}-web
 │   └── ambient-tmpl-web-mui
-│       └── {案件名}-web
+│       └── {プロジェクト名}-web
 ├── ambient-tmpl-app
-│   　└── {案件名}-app
+│   　└── {プロジェクト名}-app
 └── ambient-tmpl-infra
-    └── {案件名}-infra
+    └── {プロジェクト名}-infra
 ```
 
 ### [Root テンプレート](https://github.com/ambient-lab/ambient-tmpl-root)
