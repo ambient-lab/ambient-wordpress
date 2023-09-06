@@ -73,6 +73,32 @@ PoC 開発などデザインを重視しない場合は MUI を利用する
 - [AWS CDK](https://docs.aws.amazon.com/ja_jp/cdk/v2/guide/getting_started.html): IaC(Infrastructure as Code)
 - [AWS SAM](https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/serverless-getting-started.html): サーバーレスアプリケーションを構築
 
+## リポジトリの可視性 (≒ アクセス権限)
+
+リポジトリの可視性は次の中から選択します
+
+- public
+  - 公開リポジトリ  
+    インターネット状の誰でもアクセス可能
+- private
+  - 非公開リポジトリ  
+    リポジトリ作成者とアクセス権を有するユーザがアクセス可能  
+    Organization リポジトリの場合はその Organization メンバーがアクセス可能
+- internal
+  - 内部リポジトリ  
+    Enterprise メンバーが読み取り権限でアクセス可能  
+    Github Enterprise Cloud 利用時のみ作成可能
+
+### internal を選択するケース
+
+internal は「インナーソース」のワークフロー構築を目的として設定します
+
+インナーソースとは、ソフトウェア開発のコンセプト  
+オープンソースソフトウェアの原則を企業や組織の内部に適用するアプローチ  
+開発プロセスをオープンでコラボレーション重視にすることで開発効率と品質の向上が期待できます
+
+**専用テンプレート/リファレンスリポジトリはインナーソースと親和性が高いので internal を推奨する**
+
 # 利用するシェルについて
 
 デフォルトシェルは`zsh`を利用します。
