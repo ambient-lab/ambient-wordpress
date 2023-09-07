@@ -1,16 +1,16 @@
-IS_MERGE_ONLY=false
+IS_SKIP=false
 
-while getopts ":m" OPT; do
+while getopts ":s" OPT; do
   case ${OPT} in
-  m) 
-    IS_MERGE_ONLY=true 
+  s) 
+    IS_SKIP=true 
   ;;
   esac
 done
 
 PARENT_REPOSITORY_URL="https://github.com/ambient-lab/${PARENT_REPOSITORY}.git"
 
-if ! "${IS_MERGE_ONLY}"; then
+if ! "${IS_SKIP}"; then
   echo "starting Phase 1 ..."
   git remote add upstream ${PARENT_REPOSITORY_URL}
   git checkout -b ambient-lab-develop
