@@ -10,7 +10,8 @@
     "ghcr.io/devcontainers/features/python"
   ],
   "containerEnv": {
-    "TZ": "Asia/Tokyo"
+    "TZ": "Asia/Tokyo",
+    "PARENT_TEMPLATE_REPOSITORY": "ambient-tmpl-root"
   },
   "customizations": {
     "vscode": {
