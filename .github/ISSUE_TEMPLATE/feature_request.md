@@ -1,9 +1,10 @@
 ---
 name: Feature request
 about: このプロジェクトに対してアイディアを提案します
-title: ""
-labels: ""
-assignees: ""
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 **あなたの機能リクエストは何か問題に関連していますか？その問題について説明してください**

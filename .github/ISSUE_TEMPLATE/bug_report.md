@@ -1,9 +1,10 @@
 ---
 name: Bug report
 about: 問題の改善を支援するためのレポートを作成します
-title: ""
-labels: ""
-assignees: ""
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 **不具合の説明**
