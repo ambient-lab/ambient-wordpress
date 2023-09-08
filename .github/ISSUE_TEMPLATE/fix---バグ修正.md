@@ -1,5 +1,5 @@
 ---
-name: Fix - バグ修正
+name: Fix - バグ修正(作成中)
 about: パッチリリース - 後方互換性のあるバグ修正をします
 title: 'fix: #{999} {title}'
 labels: bug, fix, patch release
