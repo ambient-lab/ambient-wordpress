@@ -15,7 +15,7 @@
       "jqVersion": "jq-1.6"
     },
     "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.9.17"
+      "version": "3.10.13"
     },
     "./features/root": {},
     // custom feature
