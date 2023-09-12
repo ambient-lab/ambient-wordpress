@@ -25,7 +25,7 @@ python のバージョンをアップデートする際、下記の 3 箇所を�
 amplify/backend/function/xxxxxxxx/xxxxxxxx-cloudformation-template.json
 
 ```
-"Runtime": "python3.9",
+"Runtime": "python3.10",
 "Layers": [],
 "Timeout": 25
 ```
@@ -35,6 +35,6 @@ amplify/backend/function/xxxxxxxx/xxxxxxxx-cloudformation-template.json
 amplify.yml
 
 ```
-- pyenv install ${PYTHON_VERSION:-3.9}
-- pyenv global ${PYTHON_VERSION:-3.9}
+- pyenv install ${PYTHON_VERSION:-3.10}
+- pyenv global ${PYTHON_VERSION:-3.10}
 ```
