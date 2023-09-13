@@ -552,4 +552,4 @@ github-tag-action の処理後
 
 # python のバージョンアップデートについて
 
-詳細は[こちら](doc/readme/update-python-version.md)
+詳細は[こちら](doc/readme/python/update.md)
