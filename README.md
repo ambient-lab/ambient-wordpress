@@ -28,6 +28,11 @@
 - [ambient-tmpl-root](.devcontainer/features/root/README.md)
   - 最上位のテンプレートリポジトリ。
 
+# GitHub におけるリポジトリ作成について
+
+テンプレートリポジトリを利用したリポジトリ作成については
+[README](doc/github/README.md)を参照してください。
+
 # テンプレートリポジトリについて
 
 - GitHub で管理するリポジトリのテンプレートです。
