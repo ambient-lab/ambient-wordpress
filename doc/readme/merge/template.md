@@ -6,8 +6,6 @@
 
 1. Issue とブランチを作成する
 2. 作成したブランチから取り込みスクリプト(`merge-parent-template-repository.sh`)を実行する
-   1. `/workspace/.devcontainer/features/custom`への更新があった場合
-      1. costom ディレクトリで更新された内容を`/workspace/.devcontainer/features/{Project}`の同様のファイルに同一の更新を行う
    1. rebase がコンフリクトした場合
       1. コンフリクトを解決する
       2. 取り込みスクリプトに`-s`のオプションを追加して再度実行する。`merge-parent-template-repository.sh -s`
@@ -35,7 +33,7 @@
 merge の前に一度 rebase を行い、テンプレートリポジトリの内容を取り込んだブランチを作成しています。
 rebase によりコミット毎の差分を解決します。
 ここでは画像の「現在の変更(親テンプレートリポジトリの変更)」を取り込むことが主となります。
-<img src="doc/images/github/006.png">
+<img src="../../images/github/006.png">
 スクリプトに`-s`オプションを追加することでフェイズ 1 をスキップすることができます。
 `merge-parent-template-repository.sh -s`
 rebase でコンフリクトが発生した場合にこのオプションを使用します。
@@ -51,7 +49,7 @@ rebase でコンフリクトが発生した場合にこのオプションを使�
 こちらのコマンドで先ほど rebase を使って、テンプレートリポジトリの内容を取り込んだブランチと作業ブランチを merge します。
 ここでテンプレートリポジトリの変更とプロジェクトリポジトリでのコンフリクトの解決を行います。
 ここでは画像の「人力側の変更(親テンプレートリポジトリの変更を取り込んだブランチの変更)」を取り込むことが主となります。
-<img src="../../../doc/images/github/007.png">
+<img src="../../images/github/007.png">
 
 ### よくコンフリクトしてしまうファイル
 
