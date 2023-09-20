@@ -2,7 +2,7 @@
 name: Pref - 仕様・機能変更
 about: メジャーリリース - 後方互換性のない機能変更やバグ修正をします
 title: "pref: "
-labels: ""
+labels: pref, major release
 assignees: ""
 ---
 
