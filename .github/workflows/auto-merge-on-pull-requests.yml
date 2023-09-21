@@ -1,0 +1,16 @@
+name: Auto Merge On Pull Requests
+
+on:
+  pull_request:
+    types:
+      - opend
+
+jobs:
+  auto-merge-on-pull-requests:
+    name: Auto Merge On Pull Requests
+    runs-on: ubuntu-latest
+    env:
+      PR_URL: ${{github.event.pull_request.html_url}}
+    steps:
+      - name: Enable auto-merge
+        run: gh pr merge --merge --auto "$PR_URL"
