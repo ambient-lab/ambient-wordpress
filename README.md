@@ -1,9 +1,39 @@
+# 目次
+
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=1 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [目次](#目次)
+- [関連テンプレートリポジトリの README インデックス](#関連テンプレートリポジトリの-readme-インデックス)
+- [GitHub におけるリポジトリ作成について](#github-におけるリポジトリ作成について)
+- [テンプレートリポジトリについて](#テンプレートリポジトリについて)
+- [利用するシェルについて](#利用するシェルについて)
+- [環境変数設定について](#環境変数設定について)
+- [環境構築](#環境構築)
+- [GitHub リポジトリのチーム権限について](#github-リポジトリのチーム権限について)
+- [リポジトリのソースコード運用について](#リポジトリのソースコード運用について)
+- [Commit について](#commit-について)
+- [プルリクエストについて](#プルリクエストについて)
+- [fork 元の取り込みについて](#fork-元の取り込みについて)
+- [テンプレートリポジトリの取り込みについて](#テンプレートリポジトリの取り込みについて)
+- [バージョニングについて](#バージョニングについて)
+- [Issue について](#issue-について)
+- [python のバージョンアップデートについて](#python-のバージョンアップデートについて)
+
+<!-- /code_chunk_output -->
+
 # 関連テンプレートリポジトリの README インデックス
 
 関連しているテンプレートリポジトリの README に関する概要やリンクを記載しています。
 
-- [dev-root](.devcontainer/features/root/README.md)
+- [ambient-tmpl-root](.devcontainer/features/root/README.md)
   - 最上位のテンプレートリポジトリ。
+
+# GitHub におけるリポジトリ作成について
+
+テンプレートリポジトリを利用したリポジトリ作成については
+[README](doc/github/README.md)を参照してください。
 
 # テンプレートリポジトリについて
 
@@ -15,52 +45,48 @@
 ### 各リポジトリの関係
 
 ```bash
-dev-root
-├── dev-web
-│   ├── dev-web-tw
-│   │　　　　　　└── {案件}-web
-│   └── dev-web-mui
-│       └── dev-web-admin
-├── dev-app
-│　　　　　　└── {案件}-app
-└── dev-infra
-    └── {案件}-infra
+ambient-tmpl-root
+├── ambient-tmpl-web
+│   ├── ambient-tmpl-web-tw
+│   │   └── {プロジェクト名}-web
+│   └── ambient-tmpl-web-mui
+│       └── {プロジェクト名}-web
+├── ambient-tmpl-app
+│   　└── {プロジェクト名}-app
+└── ambient-tmpl-infra
+    └── {プロジェクト名}-infra
 ```
 
-### [dev-root テンプレート](https://github.com/ambient-lab/dev-root)
+### [Root テンプレート](https://github.com/ambient-lab/ambient-tmpl-root)
 
 基本 OS のテンプレート
 
-### [dev-web テンプレート](https://github.com/ambient-lab/dev-web)
+### [Web テンプレート](https://github.com/ambient-lab/ambient-tmpl-web)
 
-dev-root を fork して作られた Web システムの開発テンプレート
+**ambient-tmpl-root** を fork して作られた Web システムの開発テンプレート
 
 - React: フロントエンドフレームワーク
 - Amplify: バックエンドフレームワーク
 
-### [dev-web-tw テンプレート](https://github.com/ambient-lab/dev-web-tw)
+### [Web TW テンプレート](https://github.com/ambient-lab/ambient-tmpl-web-tw)
 
-dev-wev を fork して作られた Web システムのテンプレート
+**ambient-tmpl-web** を fork して作られた Web システムのテンプレート
 
-デザインを重視する場合は UI コンポーネントに TailwindCSS を利用しているこちらのテンプレートを利用する
+デザインを重視する場合は UI コンポーネントに [Tailwind CSS](https://tailwindcss.com/) を利用しているこちらのテンプレートを利用する
 
-- TailwindCSS: UI コンポーネント
+- Tailwind CSS: UI コンポーネント
 
-### [dev-web-mui テンプレート](https://github.com/ambient-lab/dev-web-mui)
+### [Web MUI テンプレート](https://github.com/ambient-lab/ambient-tmpl-web-mui)
 
-dev-wev を fork して作られた Web システムのテンプレート
+**ambient-tmpl-web** を fork して作られた Web システムのテンプレート
 
-管理画面などデザインを重視しない場合は UI コンポーネントに MUI を利用しているこちらのテンプレートを利用する
+管理画面などデザインを重視しない場合は UI コンポーネントに [Material UI](https://mui.com/) を利用しているこちらのテンプレートを利用する
 
-- MUI: UI コンポーネント
+- Material UI(MUI): UI コンポーネント
 
-### dev-web-admin テンプレート
+### [App テンプレート](https://github.com/ambient-lab/ambient-tmpl-app)
 
-dev-wev-mui を fork して作られた Web 管理システムのテンプレート
-
-### [dev-app テンプレート](https://github.com/ambient-lab/dev-app)
-
-dev-root を fork して作られた Expo を利用するスマホアプリシステムのテンプレート
+**ambient-tmpl-root** を fork して作られた [Expo](https://expo.dev/) を利用するスマホアプリシステムのテンプレート
 
 PoC 開発などデザインを重視しない場合は MUI を利用する
 
@@ -69,13 +95,39 @@ PoC 開発などデザインを重視しない場合は MUI を利用する
 - Amplify: バックエンドフレームワーク
 - MUI: UI コンポーネント （※要件的に MUI が許容できる場合)
 
-### [dev-infra テンプレート](https://github.com/ambient-lab/dev-infra)
+### [Infra テンプレート](https://github.com/ambient-lab/ambient-tmpl-infra)
 
-dev-root を fork して作られたインフラ構築のテンプレート
+**ambient-tmpl-root** を fork して作られたインフラ構築のテンプレート
 インフラや API、バッチなどの UI が伴わない開発に利用する
 
-- CDK: IaC(Infrastructure as Code)
-- SAM: サーバーレスアプリケーションを構築
+- [AWS CDK](https://docs.aws.amazon.com/ja_jp/cdk/v2/guide/getting_started.html): IaC(Infrastructure as Code)
+- [AWS SAM](https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/serverless-getting-started.html): サーバーレスアプリケーションを構築
+
+## リポジトリの可視性 (≒ アクセス権限)
+
+リポジトリの可視性は次の中から選択します
+
+- public
+  - 公開リポジトリ  
+    インターネット状の誰でもアクセス可能
+- private
+  - 非公開リポジトリ  
+    リポジトリ作成者とアクセス権を有するユーザがアクセス可能  
+    Organization リポジトリの場合はその Organization メンバーがアクセス可能
+- internal
+  - 内部リポジトリ  
+    Enterprise メンバーが読み取り権限でアクセス可能  
+    Github Enterprise Cloud 利用時のみ作成可能
+
+### internal を選択するケース
+
+internal は「インナーソース」のワークフロー構築を目的として設定します
+
+インナーソースとは、ソフトウェア開発のコンセプト  
+オープンソースソフトウェアの原則を企業や組織の内部に適用するアプローチ  
+開発プロセスをオープンでコラボレーション重視にすることで開発効率と品質の向上が期待できます
+
+**専用テンプレート/リファレンスリポジトリはインナーソースと親和性が高いので internal を推奨する**
 
 # 利用するシェルについて
 
@@ -128,7 +180,7 @@ AWS_SECRET_KEY=<secret_access_key>
 
 ## 前提説明
 
-GitHub が VSCode の環境をホストして提供してくれるクラウドサービスの `Codespaces` を利用して環境構築を行います。
+GitHub が VSCode の環境をホストして提供してくれるクラウドサービスの [Codespaces](https://github.co.jp/features/codespaces) を利用して環境構築を行います。
 
 Codespaces を利用するメリットとして下記があります。
 
@@ -251,45 +303,11 @@ GitHub にて用意されてるいずれかのプルリクエスト手法に基�
 
 # fork 元の取り込みについて
 
-fork 元(dev-root 等)のリポジトリに更新があった場合に取り込みの作業が必要になります
+詳細は[こちら](doc/readme/merge/fork-template.md)
 
-## 取り込みの手順
+# テンプレートリポジトリの取り込みについて
 
-### WebUI からフォークのブランチを取り込む
-
-取り込むリポジトリの web ページから、「Sync fork」のボタンを押下して取り込みを行うことができます
-
-手順の詳細は下記のリンクを確認してください。
-[WebUI からの取り込み手順](https://docs.github.com/ja/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork?platform=mac#syncing-a-fork-branch-from-the-web-ui)
-
-※コンフリクトがある場合はこちらの手順では取り込むことはできないので、下記に記載されているようにプルリクを作りそちらから取り込む必要があります
-
-### プルリクからフォークのブランチを取り込む
-
-#### コンフリクトの確認
-
-1. 環境構築の手順から取り込み用のブランチを作成
-   [ブランチの作成](#codespaces-起動手順)
-2. 取り込み用ブランチに向けて、fork 元の develop をマージするためのプルリクを作成する画面でコンフリクトの確認を行う
-   - 「compare across forks」を押すことでリポジトリから指定できるようになります。
-     <img src="doc/images/github/005.png">
-
-##### コンフリクトが無い場合
-
-1. コンフリクトの確認を行った状態から、そのままプルリクエストを作成、マージをしてもらう
-
-2. 取り込み用ブランチから取り込みたいリポジトリの develop に向けてプルリクを作成し、マージしてもらう
-
-##### コンフリクトがある場合
-
-1. 取り込み用ブランチで codespaces を立ち上げ、下記コマンドを実行しコンフリクトを解消する
-   1. git checkout -b ambient-lab-develop {取り込み用ブランチ}
-   2. git pull --rebase https://github.com/ambient-lab/dev-{fork元のリポジトリ}.git develop
-   3. git checkout -
-   4. git merge --no-ff ambient-lab-develop
-      a. `fatal: refusing to merge unrelated histories`が発生した場合は`--allow-unrelated-histories`のオプションが必要になります。
-   5. git push origin {取り込み用ブランチ}
-2. 取り込み用ブランチから取り込みたいリポジトリの develop に向けてプルリクを作成し、マージしてもらう
+詳細は[こちら](doc/readme/merge/template.md)
 
 # バージョニングについて
 
@@ -395,3 +413,11 @@ github-tag-action の処理後
 
 - リリースを作成します
 - リリース件名はタグ、本文は前のタグ以降の変更ログとなります
+
+# Issue について
+
+詳細は[こちら](doc/readme/issue/usage.md)
+
+# python のバージョンアップデートについて
+
+詳細は[こちら](doc/readme/python/update.md)

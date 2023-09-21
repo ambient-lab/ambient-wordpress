@@ -10,7 +10,8 @@
     "ghcr.io/devcontainers/features/python"
   ],
   "containerEnv": {
-    "TZ": "Asia/Tokyo"
+    "TZ": "Asia/Tokyo",
+    "PARENT_TEMPLATE_REPOSITORY": "ambient-tmpl-root"
   },
   "customizations": {
     "vscode": {
@@ -65,7 +66,7 @@
         "mosapride.zenkaku",
         "aaron-bond.better-comments",
         "shardulm94.trailing-spaces",
-        "bungcip.better-toml",
+        "tamasfe.even-better-toml",
         "mutantdino.resourcemonitor",
         "shd101wyy.markdown-preview-enhanced",
         "mikestead.dotenv",

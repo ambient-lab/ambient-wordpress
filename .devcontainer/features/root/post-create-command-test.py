@@ -20,4 +20,4 @@ def test_python_is_installed(host):
     cmd = host.run("python --version")
     version = cmd.stdout.split()[1]
     assert cmd.stdout.startswith("Python")
-    assert version.startswith("3.9.17")
+    assert version.startswith("3.10.13")
