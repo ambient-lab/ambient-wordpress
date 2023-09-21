@@ -1,9 +1,10 @@
-# 目次 {ignore=true}
+# 目次
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=1 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
+- [目次](#目次)
 - [関連テンプレートリポジトリの README インデックス](#関連テンプレートリポジトリの-readme-インデックス)
 - [GitHub におけるリポジトリ作成について](#github-におけるリポジトリ作成について)
 - [テンプレートリポジトリについて](#テンプレートリポジトリについて)
