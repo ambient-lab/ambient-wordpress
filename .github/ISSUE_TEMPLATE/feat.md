@@ -1,6 +1,6 @@
 ---
 name: Feat - 仕様・機能追加
-about: マイナーリリース - 後方互換性のある機能追加をします
+about: マイナーリリース - 後方互換性のある機能追加をします。Readme修正もこちらを使用します。
 title: "feat: "
 labels: feat, minor release
 assignees: ""

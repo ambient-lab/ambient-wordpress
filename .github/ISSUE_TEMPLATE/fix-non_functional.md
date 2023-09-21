@@ -1,6 +1,6 @@
 ---
 name: Fix - 非機能
-about: パッチリリース - 非機能(Readme更新等)修正をします
+about: パッチリリース - 非機能の修正をします
 title: "fix:  "
 labels: fix, patch release
 assignees: ""
