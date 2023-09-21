@@ -3,7 +3,7 @@ name: Auto Merge On Pull Requests
 on:
   pull_request:
     types:
-      - opend
+      - opened
 
 jobs:
   auto-merge-on-pull-requests:
