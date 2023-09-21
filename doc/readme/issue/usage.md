@@ -1,9 +1,10 @@
-# 目次 {ignore=true}
+# 目次
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=3 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
+- [目次](#目次)
 - [Issue について](#issue-について)
   - [Fix - バグ修正](#fix---バグ修正)
   - [Fix - 非機能](#fix---非機能)
