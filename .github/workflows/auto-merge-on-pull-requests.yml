@@ -5,6 +5,9 @@ on:
     types:
       - opened
 
+permissions:
+  pull-requests: write
+
 jobs:
   auto-merge-on-pull-requests:
     name: Auto Merge On Pull Requests
