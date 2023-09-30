@@ -3,22 +3,425 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
-
-# minimum configuration for two package managers
 version: 2
 updates:
-  # Enable version updates for npm
+  # ----------------------------------------
+  # Enable version updates for npm (Node.js)
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
-    # Check the npm registry for updates every day (weekdays)
-    schedule:
-      interval: "daily"
-
-  # Enable version updates for Docker
-  - package-ecosystem: "docker"
-    # Look for a `Dockerfile` in the `root` directory
-    directory: "/"
-    # Check for updates once a week
+    reviewers:
+      - ${{secrets.REVIEWERS}}
     schedule:
       interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "npm dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for pip (Python)
+  - package-ecosystem: "pip"
+    # Look for `requirements.txt` and `Pipfile` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "pip dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Bundler (Ruby)
+  - package-ecosystem: "bundler"
+    # Look for `Gemfile` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "bundler dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Cargo (Rust)
+  - package-ecosystem: "cargo"
+    # Look for `Cargo.toml` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "cargo dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Composer (PHP)
+  - package-ecosystem: "composer"
+    # Look for `composer.json` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "composer dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Maven (Java)
+  - package-ecosystem: "mix"
+    # Look for `mix.exs` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "mix dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for elm (Elm)
+  - package-ecosystem: "elm"
+    # Look for `elm.json` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "elm dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Gomod (Go)
+  - package-ecosystem: "gomod"
+    # Look for `go.mod` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "gomod dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Nuget (.NET)
+  - package-ecosystem: "nuget"
+    # Look for `packages.config` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "nuget dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Pub (Dart)
+  - package-ecosystem: "pub"
+    # Look for `pubspec.yaml` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "pub dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Swift
+  - package-ecosystem: "swift"
+    # Look for `Package.swift` and `lock` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "swift dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Terraform
+  - package-ecosystem: "terraform"
+    # Look for `*.tf` and `*.tf.json` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "terraform dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for Submodules
+  - package-ecosystem: "gitsubmodule"
+    # Look for `.gitmodules` files in the `root` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "gitsubmodule dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+  # ----------------------------------------
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    # Look for `*.yml` files in the `.github/workflows` directory
+    directory: "/"
+    reviewers:
+      - ${{secrets.REVIEWERS}}
+    schedule:
+      interval: "weekly"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+      day: "monday"
+    commit-message:
+      # Prefix all commit messages with "feat: "
+      prefix: "feat"
+    target-branch: "develop"
+    labels:
+      - "github-actions dependencies"
+      - "feat"
+      - "minor release"
+    # Limit open pull requests to 10 at any time
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
