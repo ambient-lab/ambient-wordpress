@@ -1,6 +1,6 @@
 ---
 name: Blank Issue
-about: 空白のIssueを作成します
+about: 空白のIssueを作成します。調査等のコード修正を伴わない対応はこちらをご利用ください
 title: ""
 labels: blank issue
 assignees: ""
