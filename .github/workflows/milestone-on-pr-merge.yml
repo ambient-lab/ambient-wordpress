@@ -1,0 +1,81 @@
+name: Milestone on PR Merge
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  milestone-on-pr-merge:
+    runs-on: ubuntu-latest
+    # マージされた PR のみを対象とする
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: get-week-number
+        id: get-week-number
+        run: |
+          # 週番号と開始日、終了日を生成する
+          week_number=$(date +%U)
+          week_start_date=$(date -d "Jan 1, $(date +%Y) +$((week_number - 1)) weeks" +%Y-%m-%d)
+          week_end_date=$(date -d "$week_start_date +6 days" +%Y-%m-%d)
+          echo "week_number=$week_number" >> $GITHUB_OUTPUT
+          echo "week_start_date='$week_start_date'" >> $GITHUB_OUTPUT
+          echo "week_end_date='$week_end_date'" >> $GITHUB_OUTPUT
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            # 利用するマイルストーンの情報を生成する
+            const milestoneTitle = 'Mainリリース W' + ${{ steps.get-week-number.outputs.week_number }}
+            const milestoneDescription = ${{ steps.get-week-number.outputs.week_start_date }} + ' ~ ' + ${{ steps.get-week-number.outputs.week_end_date }}
+            const milestoneDueOn = ${{ steps.get-week-number.outputs.week_end_date }} + 'T00:00:00+00:00'
+
+            console.log("マイルストーンの存在チェック")
+            const reg = new RegExp(milestoneTitle)
+            const milestones = await github.rest.issues.listMilestones({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sort: "due_on",
+              direction: "desc",
+              state: "all",
+            })
+            let milestone = milestones.data.find(({ title }) => title.match(reg)) || null
+
+            if (!milestone) {
+              console.log("マイルストーンが存在しないため作成します")
+              const createResult = await github.rest.issues.createMilestone({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: milestoneTitle,
+                description: milestoneDescription,
+                due_on: milestoneDueOn
+              })
+              milestone = createResult.data
+            }
+
+            if (milestone.state == 'closed') {
+              console.log("マイルストーンをオープンに更新します")
+              await github.rest.issues.updateMilestone({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                milestone_number: milestone.number,
+                state: 'open'
+              })
+            }
+
+            const prNumber = context.payload.pull_request.number
+            console.log("マイルストーンとPRを紐づけます")
+            console.log({issue_number: prNumber, milestone: milestone.number,})
+            const result = await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              milestone: milestone.number,
+            })
+            console.log(result)
