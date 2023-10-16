@@ -1,0 +1,70 @@
+name: Manage Milestone On PR Merge
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+
+permissions:
+  issues: write
+  pull-requests: write
+
+env:
+  github-token: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  on-pr-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: get milestone
+        id: get_milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('現在のマイルストーンを取得します')
+            const reg = new RegExp("Merged Pull Requests .+ ~")
+            const listParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              sort: "due_on", direction: "desc", state: "open",
+            }
+            console.log('call github.rest.issues.listMilestones()')
+            console.log(listParams)
+            const milestones = await github.rest.issues.listMilestones(listParams)
+            let milestone = milestones.data.find(({ title }) => title.match(reg)) || null
+
+            if (milestone) {
+              console.log('マイルストーンが見つかりました')
+              console.log(milestone)
+              return milestone
+            }
+
+            console.log('マイルストーンが見つかりませんでした')
+            console.log('マイルストーンを作成します')
+            const today = new Date().toLocaleDateString("ja-JP", {year: "numeric",month: "2-digit",day: "2-digit"}).replaceAll('/', '-')
+            const createParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: "Merged Pull Requests " + today + " ~", description: today + " ~ ",
+            }
+            console.log('call github.rest.issues.createMilestone()')
+            console.log(createParams)
+            milestone = await github.rest.issues.createMilestone(createParams)
+            console.log('マイルストーンを作成しました')
+            console.log(milestone.data)
+            return milestone.data
+
+      - name: Add PR to milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("マイルストーンとPRを紐づけます")
+            const milestone = ${{ steps.get_milestone.outputs.result }}
+            updateParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number, milestone: milestone.number,
+            }
+            console.log('call github.rest.issues.update()')
+            console.log(updateParams)
+            const result = await github.rest.issues.update(updateParams)
+            console.log(result)
