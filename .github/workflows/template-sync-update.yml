@@ -17,6 +17,7 @@ jobs:
   #
   fetch-repos:
     runs-on: ubuntu-latest
+    if: secrets.APP_ID && secrets.PRIVATE_KEY
     outputs:
       project-repositories: ${{ steps.fetch-tmpl-repos.outputs.project-repositories }}
       template-repositories: ${{ steps.fetch-tmpl-repos.outputs.template-repositories }}
