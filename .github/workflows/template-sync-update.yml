@@ -13,11 +13,27 @@ on:
 
 jobs:
   #
+  # 環境変数の存在確認
+  #
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has-secrets: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check for secrets
+        id: check
+        run: |
+          if [[ -n "${{ secrets.APP_ID }}" && -n "${{ secrets.PRIVATE_KEY }}" ]]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+  #
   # テンプレートリポジトリの更新による、自動取り込み対象リポジトリを取得
   #
   fetch-repos:
     runs-on: ubuntu-latest
-    if: secrets.APP_ID && secrets.PRIVATE_KEY
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
     outputs:
       project-repositories: ${{ steps.fetch-tmpl-repos.outputs.project-repositories }}
       template-repositories: ${{ steps.fetch-tmpl-repos.outputs.template-repositories }}
@@ -29,6 +45,10 @@ jobs:
       - name: Generate token
         id: app-token
         uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID != '' }} && ${{ env.PRIVATE_KEY != '' }}
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
