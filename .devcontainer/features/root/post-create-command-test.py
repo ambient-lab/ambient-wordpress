@@ -8,7 +8,7 @@ def test_githubcli_is_installed(host):
     cmd = host.run("gh --version")
     version = cmd.stdout.split()[2]
     assert cmd.stdout.startswith("gh")
-    assert version.startswith("2.32.0")
+    assert version.startswith("2.38.0")
 
 def test_jqlikes_is_installed(host):
     cmd = host.run("jq --version")
