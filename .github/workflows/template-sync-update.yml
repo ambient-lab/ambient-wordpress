@@ -210,6 +210,22 @@ jobs:
               gh pr close $pr --delete-branch -c "テンプレートに最新更新が入るためクローズ"
             done
             echo "issues and pull requests closed."
+            # -------------------------------------------------------------------------
+            # 各ラベルをチェックし、存在しない場合には作成
+            # -------------------------------------------------------------------------
+            declare -A labels
+            labels["fix"]="Commit message type : Patch release|F0F055"
+            labels["patch release"]="SemVer Release : x.y.0 > x.y.1, 後方互換性のあるバグ修正や軽微な修正|F0F055"
+            labels["template-update"]="テンプレート元からの差分の取り込み|75015D"
+            for label in "${!labels[@]}"; do
+              IFS='|' read -r description color <<< "${labels[$label]}"
+              if ! gh label list --search "$label" | grep -q "$label"; then
+                echo "Creating $label label with description '$description' and color '$color'..."
+                gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+              else
+                echo "$label label exists."
+              fi
+            done
 
             # Git設定
             echo "Setting git config..."
@@ -366,6 +382,23 @@ jobs:
                 gh pr close $pr --delete-branch -c "テンプレートに最新更新が入るためクローズ"
               done
               echo "issues and pull requests closed."
+
+              # -------------------------------------------------------------------------
+              # 各ラベルをチェックし、存在しない場合には作成
+              # -------------------------------------------------------------------------
+              declare -A labels
+              labels["fix"]="Commit message type : Patch release|F0F055"
+              labels["patch release"]="SemVer Release : x.y.0 > x.y.1, 後方互換性のあるバグ修正や軽微な修正|F0F055"
+              labels["template-update"]="テンプレート元からの差分の取り込み|75015D"
+              for label in "${!labels[@]}"; do
+                IFS='|' read -r description color <<< "${labels[$label]}"
+                if ! gh label list --search "$label" | grep -q "$label"; then
+                  echo "Creating $label label with description '$description' and color '$color'..."
+                  gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+                else
+                  echo "$label label exists."
+                fi
+              done
 
               # Git設定
               git config --global user.name '${{ github.repository_owner }}-tmpl-bot'
