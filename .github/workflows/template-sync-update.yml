@@ -72,22 +72,28 @@ jobs:
 
             // テンプレートリポジトリ名によって処理を分岐
             if (templateRepoName === `${orgPrefix}-tmpl-root`) {
-              templateRepositories.push(
-                {name: `${orgPrefix}-tmpl-web`, baseTemplateName: templateRepoName},
-                {name: `${orgPrefix}-tmpl-app`, baseTemplateName: templateRepoName},
-                {name: `${orgPrefix}-tmpl-infra`, baseTemplateName: templateRepoName},
-              );
+              //親組織かどうか判定
+              if (${{ secrets.PARENT_OWNER }} === owner) {
+                templateRepositories.push(
+                  {name: `${orgPrefix}-tmpl-web`, baseTemplateName: templateRepoName},
+                  {name: `${orgPrefix}-tmpl-app`, baseTemplateName: templateRepoName},
+                  {name: `${orgPrefix}-tmpl-infra`, baseTemplateName: templateRepoName},
+                );
+              }
             } else if (templateRepoName === `${orgPrefix}-tmpl-web`) {
-              templateRepositories.push(
-                {name: `${orgPrefix}-tmpl-web-tw`, baseTemplateName: templateRepoName},
-                {name: `${orgPrefix}-tmpl-web-mui`, baseTemplateName: templateRepoName},
-              );
+              if (${{ secrets.PARENT_OWNER }} === owner) {
+                //親組織かどうか判定
+                templateRepositories.push(
+                  {name: `${orgPrefix}-tmpl-web-tw`, baseTemplateName: templateRepoName},
+                  {name: `${orgPrefix}-tmpl-web-mui`, baseTemplateName: templateRepoName},
+                );
+              }
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-tw`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-mui`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-app`) {
             } else if (templateRepoName === "${orgPrefix}-tmpl-infra") {
             } else {
-              // 処理中断
+              // プロジェクトリポジトリであれば処理中断
               return;
             }
 
@@ -327,7 +333,7 @@ jobs:
           done
 
   #
-  # [組織内] 対象テンプレートリポジトリから子テンプレートリポジトリの自動取り込みを実施
+  # [親組織のみ] 対象テンプレートリポジトリから子テンプレートリポジトリの自動取り込みを実施
   # tmpl-root[main反映後]: tmpl-web, tmpl-app, tmpl-infraを対象にする
   # tmpl-web[main反映後]: tmpl-web-tw, tmpl-web-muiを対象にする
   #
