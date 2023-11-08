@@ -72,22 +72,16 @@ jobs:
 
             // テンプレートリポジトリ名によって処理を分岐
             if (templateRepoName === `${orgPrefix}-tmpl-root`) {
-              //親組織かどうか判定
-              if (${{ secrets.PARENT_OWNER }} === owner) {
-                templateRepositories.push(
-                  {name: `${orgPrefix}-tmpl-web`, baseTemplateName: templateRepoName},
-                  {name: `${orgPrefix}-tmpl-app`, baseTemplateName: templateRepoName},
-                  {name: `${orgPrefix}-tmpl-infra`, baseTemplateName: templateRepoName},
-                );
-              }
+              templateRepositories.push(
+                {name: `${orgPrefix}-tmpl-web`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-app`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-infra`, baseTemplateName: templateRepoName},
+              );
             } else if (templateRepoName === `${orgPrefix}-tmpl-web`) {
-              if (${{ secrets.PARENT_OWNER }} === owner) {
-                //親組織かどうか判定
-                templateRepositories.push(
-                  {name: `${orgPrefix}-tmpl-web-tw`, baseTemplateName: templateRepoName},
-                  {name: `${orgPrefix}-tmpl-web-mui`, baseTemplateName: templateRepoName},
-                );
-              }
+              templateRepositories.push(
+                {name: `${orgPrefix}-tmpl-web-tw`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-web-mui`, baseTemplateName: templateRepoName},
+              );
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-tw`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-mui`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-app`) {
