@@ -256,14 +256,14 @@ jobs:
             # プロジェクトリポジトリのissueから、developブランチをベースに新しい作業ブランチを切る
             GH_ISSUE_DEVELOP=$(gh issue develop \
               --repo ${{ github.repository_owner }}/$PROJECT_REPOSITORY \
-              $ISSUE_NUMBER --base develop)
+              $ISSUE_NUMBER --base develop --checkout)
             echo "GH_ISSUE_DEVELOP: $GH_ISSUE_DEVELOP"
             SYNC_BRANCH=$(echo $GH_ISSUE_DEVELOP | awk -F'/' '{print $NF}')
             echo "Branch name: $SYNC_BRANCH"
 
             # ブランチ作成
             echo "Creating branch..."
-            git checkout -b $SYNC_BRANCH
+            git checkout $SYNC_BRANCH
             echo "Branch created: $SYNC_BRANCH"
 
             echo "Adding template remote repository..."
@@ -428,14 +428,14 @@ jobs:
               # 子テンプレートリポジトリのissueから、developブランチをベースに新しい作業ブランチを切る
               GH_ISSUE_DEVELOP=$(gh issue develop \
                 --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY \
-                $ISSUE_NUMBER --base develop)
+                $ISSUE_NUMBER --base develop --checkout)
               echo "GH_ISSUE_DEVELOP: $GH_ISSUE_DEVELOP"
               SYNC_BRANCH=$(echo $GH_ISSUE_DEVELOP | awk -F'/' '{print $NF}')
               echo "Branch name: $SYNC_BRANCH"
 
               # ブランチ作成
               echo "Creating branch..."
-              git checkout -b $SYNC_BRANCH
+              git checkout $SYNC_BRANCH
               echo "Branch created: $SYNC_BRANCH"
 
               echo "Adding parent template remote repository..."
