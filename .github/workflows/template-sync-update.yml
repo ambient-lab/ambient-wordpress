@@ -32,6 +32,7 @@ jobs:
   # テンプレートリポジトリの更新による、自動取り込み対象リポジトリを取得
   #
   fetch-repos:
+    needs: check-secrets
     runs-on: ubuntu-latest
     if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
     outputs:
