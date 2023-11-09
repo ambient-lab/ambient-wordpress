@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 関連テンプレートリポジトリの README インデックス
 
 関連しているテンプレートリポジトリの README に関する概要やリンクを記載しています。
@@ -438,3 +439,8 @@ github-tag-action の処理後
 
 - リリースを作成します
 - リリース件名はタグ、本文は前のタグ以降の変更ログとなります
+=======
+# ドキュメントについて
+
+ドキュメントは[Wiki](https://github.com/ambient-lab/ambient-tmpl-root/wiki)で管理しているので参照してください。
+>>>>>>> ambient-tmpl-root/main

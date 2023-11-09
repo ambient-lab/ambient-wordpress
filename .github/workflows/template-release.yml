@@ -1,0 +1,172 @@
+# -------------------------------------------------------------------
+# テンプレートで用意してるリリースに特化した基本処理はここですべて定義します
+# -------------------------------------------------------------------
+name: Template Basic Release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  #
+  # マイルストーン管理
+  # developブランチへのマージ後に実行
+  #
+  manage-develop-milestone:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
+    steps:
+      - name: Get Milestone on develop Merge
+        id: get_milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('現在のマイルストーンを取得します')
+            const reg = new RegExp("Merged Pull Requests .+ ~")
+            const listParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              sort: "due_on", direction: "desc", state: "open",
+            }
+            console.log('call github.rest.issues.listMilestones()')
+            console.log(listParams)
+            const milestones = await github.rest.issues.listMilestones(listParams)
+            let milestone = milestones.data.find(({ title }) => title.match(reg)) || null
+
+            if (milestone) {
+              console.log('マイルストーンが見つかりました')
+              console.log(milestone)
+              return milestone
+            }
+
+            console.log('マイルストーンが見つかりませんでした')
+            console.log('マイルストーンを作成します')
+            const today = new Date().toLocaleDateString("ja-JP", {year: "numeric",month: "2-digit",day: "2-digit"}).replaceAll('/', '-')
+            const createParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: "Merged Pull Requests " + today + " ~", description: today + " ~ ",
+            }
+            console.log('call github.rest.issues.createMilestone()')
+            console.log(createParams)
+            milestone = await github.rest.issues.createMilestone(createParams)
+            console.log('マイルストーンを作成しました')
+            console.log(milestone.data)
+            return milestone.data
+      - name: Add develop PR to Milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("マイルストーンとPRを紐づけます")
+            const milestone = ${{ steps.get_milestone.outputs.result }}
+            updateParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number, milestone: milestone.number,
+            }
+            console.log('call github.rest.issues.update()')
+            console.log(updateParams)
+            const result = await github.rest.issues.update(updateParams)
+            console.log(result)
+
+  #
+  # マイルストーン管理
+  # mainブランチへのマージ後に実行
+  #
+  manage-main-milestone:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    steps:
+      - name: Get PR Milestone
+        id: get_milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('現在のマイルストーンを取得します')
+            const reg = new RegExp("Merged Pull Requests .+ ~")
+            const listParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sort: "due_on",
+              direction: "desc",
+              state: "open",
+            }
+            console.log('call github.rest.issues.listMilestones()')
+            console.log(listParams)
+            const milestones = await github.rest.issues.listMilestones(listParams)
+            const milestone = milestones.data.find(({ title }) => title.match(reg)) || null
+            if (milestone) {
+              console.log('マイルストーンが見つかりました')
+              console.log(milestone)
+              return milestone
+            } else {
+              console.log('マイルストーンが見つかりませんでした')
+              return false
+            }
+      - name: Close Previous Milestone
+        uses: actions/github-script@v6
+        if: ${{ steps.get_milestone.outputs.result }} != false
+        with:
+          script: |
+            console.log('現在のマイルストーンをクローズします')
+            const today = new Date().toLocaleDateString("ja-JP", {year: "numeric",month: "2-digit",day: "2-digit"}).replaceAll('/', '-')
+            const milestone = ${{ steps.get_milestone.outputs.result }}
+            const updateParams = {
+              owner: context.repo.owner, repo: context.repo.repo,
+              milestone_number: milestone.number, state: 'closed',
+              title: milestone.title + ' ' + today, description: milestone.description + ' ' + today,
+            }
+            console.log('call github.rest.issues.updateMilestone()')
+            console.log(updateParams)
+            const result = await github.rest.issues.updateMilestone(updateParams)
+            console.log(result)
+      - name: Create Next Milestone
+        id: create_milestone
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('次回のマイルストーンを作成します')
+            const today = new Date().toLocaleDateString("ja-JP", {year: "numeric",month: "2-digit",day: "2-digit"}).replaceAll('/', '-')
+            const createParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Merged Pull Requests " + today + " ~",
+              description: today + " ~",
+            }
+            console.log('call github.rest.issues.createMilestone()')
+            console.log(createParams)
+            const milestone = await github.rest.issues.createMilestone(createParams)
+            return milestone.data
+
+  #
+  # バージョニング管理とリリースノート作成
+  # mainブランチへのマージ後に実行
+  #
+  create-release:
+    name: Create Versioning & Release
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: "main"
+          pre_release_branches: "main"
+          default_bump: "patch"
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
