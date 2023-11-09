@@ -9,7 +9,7 @@
       "version": "2.13.1"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "2.32.0"
+      "version": "2.38.0"
     },
     "ghcr.io/eitsupi/devcontainer-features/jq-likes:1.0.1": {
       "jqVersion": "jq-1.6"
