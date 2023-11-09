@@ -222,7 +222,7 @@ jobs:
               IFS='|' read -r description color <<< "${labels[$label]}"
               if ! gh label list --search "$label" | grep -q "$label"; then
                 echo "Creating $label label with description '$description' and color '$color'..."
-                gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+                gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY --force
               else
                 echo "$label label exists."
               fi
@@ -395,7 +395,7 @@ jobs:
                 IFS='|' read -r description color <<< "${labels[$label]}"
                 if ! gh label list --search "$label" | grep -q "$label"; then
                   echo "Creating $label label with description '$description' and color '$color'..."
-                  gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+                  gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY --force
                 else
                   echo "$label label exists."
                 fi
