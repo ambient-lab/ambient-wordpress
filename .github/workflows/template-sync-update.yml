@@ -1,0 +1,501 @@
+# -------------------------------------------------------------------
+# テンプレートリポジトリの更新による自動取り込み処理はここですべて定義します
+# -------------------------------------------------------------------
+name: Template Sync Update
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  #
+  # 環境変数の存在確認
+  #
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has-secrets: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check for secrets
+        id: check
+        run: |
+          if [[ -n "${{ secrets.APP_ID }}" && -n "${{ secrets.PRIVATE_KEY }}" ]]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+  #
+  # テンプレートリポジトリの更新による、自動取り込み対象リポジトリを取得
+  #
+  fetch-repos:
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    outputs:
+      project-repositories: ${{ steps.fetch-tmpl-repos.outputs.project-repositories }}
+      template-repositories: ${{ steps.fetch-tmpl-repos.outputs.template-repositories }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID != '' }} && ${{ env.PRIVATE_KEY != '' }}
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Fetch Repositories
+        id: fetch-tmpl-repos
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          result-encoding: string
+          script: |
+            const owner = context.repo.owner
+            //ワークフロー実行時のリポジトリ名を取得
+            const templateRepoName = context.repo.repo;
+            const orgPrefix = templateRepoName.split("-")[0]
+
+            let endCursor = null;
+            let hasNextPage = true;
+            const projectRepositories = [];
+            const templateRepositories = [];
+
+            // テンプレートリポジトリ名によって処理を分岐
+            if (templateRepoName === `${orgPrefix}-tmpl-root`) {
+              templateRepositories.push(
+                {name: `${orgPrefix}-tmpl-web`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-app`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-infra`, baseTemplateName: templateRepoName},
+              );
+            } else if (templateRepoName === `${orgPrefix}-tmpl-web`) {
+              templateRepositories.push(
+                {name: `${orgPrefix}-tmpl-web-tw`, baseTemplateName: templateRepoName},
+                {name: `${orgPrefix}-tmpl-web-mui`, baseTemplateName: templateRepoName},
+              );
+            } else if (templateRepoName === `${orgPrefix}-tmpl-web-tw`) {
+            } else if (templateRepoName === `${orgPrefix}-tmpl-web-mui`) {
+            } else if (templateRepoName === `${orgPrefix}-tmpl-app`) {
+            } else if (templateRepoName === "${orgPrefix}-tmpl-infra") {
+            } else {
+              // プロジェクトリポジトリであれば処理中断
+              return;
+            }
+
+
+            while (hasNextPage) {
+                const query = `
+                query($owner: String!, $cursor: String) {
+                  repositoryOwner(login: $owner) {
+                    repositories(first: 100, after: $cursor, affiliations: OWNER) {
+                      edges {
+                        cursor
+                        node {
+                          name
+                          templateRepository {
+                            name
+                            owner {
+                              login
+                            }
+                          }
+                        }
+                      }
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
+                    }
+                  }
+                }
+              `;
+              const variables = {
+                owner,
+                cursor: endCursor
+              };
+
+              const response = await github.graphql(query, variables);
+              const repos = response.repositoryOwner.repositories.edges;
+
+              repos.forEach(repo => {
+                //対象テンプレートリポジトリから作られたプロジェクトリポジトリを特定
+                if (repo.node.templateRepository?.name === templateRepoName) {
+                  projectRepositories.push({
+                    name: repo.node.name,
+                    templateRepositoryName: repo.node.templateRepository.name,
+                    owner: repo.node.templateRepository.owner.login
+                  });
+                }
+              });
+
+              endCursor = response.repositoryOwner.repositories.pageInfo.endCursor;
+              hasNextPage = response.repositoryOwner.repositories.pageInfo.hasNextPage;
+              console.log("total repository length", repos.length);
+              console.log("hasNextPage", hasNextPage);
+            }
+
+            try {
+              // outputsに値をセット
+              console.log("project repository", projectRepositories);
+              console.log("project repository length", projectRepositories.length);
+              core.setOutput('project-repositories', JSON.stringify(projectRepositories));
+
+              // outputsに値をセット
+              console.log("template repository", templateRepositories);
+              console.log("template repository length", templateRepositories.length);
+              core.setOutput('template-repositories', JSON.stringify(templateRepositories));
+            } catch (error) {
+              console.log(error);
+            }
+
+  #
+  # 対象テンプレートリポジトリから作られたプロジェクトリポジトリへ自動取り込みを実施
+  #
+  sync-project-repos:
+    needs: fetch-repos
+    runs-on: ubuntu-latest
+    if: ${{ needs.fetch-repos.outputs.project-repositories != '[]' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Sync to PROJECT Repositories
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          REPOSITORIES_LENGTH=$(echo '${{ needs.fetch-repos.outputs.project-repositories }}' | jq length)
+          echo "Length of project repositories: $REPOSITORIES_LENGTH"
+          # -------------------------------------------------------------------------
+          # 対象テンプレートリポジトリに紐づくプロジェクトリポジトリのみ反映対象とする
+          # -------------------------------------------------------------------------
+          echo '${{ needs.fetch-repos.outputs.project-repositories }}' | jq -c '.[]' | while read -r obj; do
+            # 各オブジェクトのキーと値を出力
+            PROJECT_REPOSITORY=$(echo "$obj" | jq -r '.name')
+            TEMPLATE_REPOSITORY=$(echo "$obj" | jq -r '.templateRepositoryName')
+            OWNER=$(echo "$obj" | jq -r '.owner')
+
+            echo "projectRepository: $PROJECT_REPOSITORY"
+            echo "templateRepository: $TEMPLATE_REPOSITORY"
+
+            # 作業ディレクトリを作成
+            echo "Creating working directory..."
+            git clone https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository_owner }}/$PROJECT_REPOSITORY.git
+            cd $PROJECT_REPOSITORY
+
+            # -------------------------------------------------------------------------
+            # 最新更新を入れるため、既にあるissue,pullrequestをクローズ、branchを削除する
+            # -------------------------------------------------------------------------
+            echo "Closing issues and pull requests..."
+            issues=$(gh issue list --search "テンプレートリポジトリのリリースによる自動取り込み in:title" --json number --jq '.[].number')
+            echo "issues: $issues"
+            for issue in $issues; do
+              gh issue close $issue -c "テンプレートに最新更新が入るためクローズ"
+            done
+            prs=$(gh pr list --search "テンプレートリポジトリの更新による自動取り込み in:title" --state open --json number --jq '.[].number')
+            for pr in $prs; do
+              gh pr close $pr --delete-branch -c "テンプレートに最新更新が入るためクローズ"
+            done
+            echo "issues and pull requests closed."
+            # -------------------------------------------------------------------------
+            # 各ラベルをチェックし、存在しない場合には作成
+            # -------------------------------------------------------------------------
+            declare -A labels
+            labels["fix"]="Commit message type : Patch release|F0F055"
+            labels["patch release"]="SemVer Release : x.y.0 > x.y.1, 後方互換性のあるバグ修正や軽微な修正|F0F055"
+            labels["template-update"]="テンプレート元からの差分の取り込み|75015D"
+            for label in "${!labels[@]}"; do
+              IFS='|' read -r description color <<< "${labels[$label]}"
+              if ! gh label list --search "$label" | grep -q "$label"; then
+                echo "Creating $label label with description '$description' and color '$color'..."
+                gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+              else
+                echo "$label label exists."
+              fi
+            done
+
+            # Git設定
+            echo "Setting git config..."
+            git config --global user.name '${{ github.repository_owner }}-tmpl-bot'
+            git config --global user.email '${{ github.repository_owner }}-tmpl-bot@users.noreply.github.com'
+
+            # 現在の日時を取得
+            DATE_TIME=$(TZ=Asia/Tokyo date +'%Y%m%d%H%M%S')
+
+            # issueの詳細を定義
+            ISSUE_TITLE="[更新日時: $DATE_TIME] テンプレートリポジトリのリリースによる自動取り込み"
+            ISSUE_BODY="テンプレートリポジトリ[${{ github.repository_owner }}/$TEMPLATE_REPOSITORY](https://github.com/${{ github.repository_owner }}/$TEMPLATE_REPOSITORY/tree/main)のmainブランチがリリースされました。<br>\
+            自動取り込みとなるため、レビュワー側でコンフリクト含めた変更点のプルリクエストを確認してください。"
+
+            # プロジェクトリポジトリにissueを作成
+            echo "Creating issue in repository..."
+            NEW_ISSUE_URL=$(gh issue create \
+              --repo ${{ github.repository_owner }}/$PROJECT_REPOSITORY \
+              --title "$ISSUE_TITLE" \
+              --body "$ISSUE_BODY" \
+              --label "template-update,fix,patch release")
+
+            # Issue番号を抽出
+            ISSUE_NUMBER=$(echo $NEW_ISSUE_URL | grep -oP '[^/]+$' | tr -dc '0-9')
+            echo "Issue number: $ISSUE_NUMBER"
+
+            # プロジェクトリポジトリのissueから、developブランチをベースに新しい作業ブランチを切る
+            GH_ISSUE_DEVELOP=$(gh issue develop \
+              --repo ${{ github.repository_owner }}/$PROJECT_REPOSITORY \
+              $ISSUE_NUMBER --base develop)
+            echo "GH_ISSUE_DEVELOP: $GH_ISSUE_DEVELOP"
+            SYNC_BRANCH=$(echo $GH_ISSUE_DEVELOP | awk -F'/' '{print $NF}')
+            echo "Branch name: $SYNC_BRANCH"
+
+            # ブランチ作成
+            echo "Creating branch..."
+            git checkout -b $SYNC_BRANCH
+            echo "Branch created: $SYNC_BRANCH"
+
+            echo "Adding template remote repository..."
+            git remote add $TEMPLATE_REPOSITORY https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository_owner }}/$TEMPLATE_REPOSITORY.git
+            git fetch $TEMPLATE_REPOSITORY main
+            echo "Remote repository added: $TEMPLATE_REPOSITORY"
+
+            # mainブランチをpullし、コンフリクトが発生した場合でも "強制的に" マージを進める
+            MERGE_OUTPUT=$(git merge $TEMPLATE_REPOSITORY/main --allow-unrelated-histories --no-edit || true)
+            echo "-----------MERGE_OUTPUT-----------"
+            echo "$MERGE_OUTPUT"
+
+            # コンフリクトが発生したファイルを全てステージングエリアに追加
+            git add .
+
+            # 強制的なコミットを行い、コンフリクトのマーカーを含む状態で変更を保存
+            git commit -m "テンプレートリポジトリ更新による自動取り込み" --no-verify  || true
+            echo "Commit completed."
+
+            # ブランチをプロジェクトリポジトリのリモートにプッシュ
+            git push --set-upstream origin $SYNC_BRANCH || true
+            echo "Push completed."
+
+            # マージ出力結果から「CONFLICT」文字列を検索
+            if echo "$MERGE_OUTPUT" | grep -q "CONFLICT"; then
+              echo "Merge conflict detected."
+              CONFLICT="true"
+            else
+              echo "No merge conflicts."
+              CONFLICT="false"
+            fi
+
+            # 前のステップからの出力に基づいてプルリクエストのタイトルと本文を設定
+            if [ $CONFLICT == "true" ]; then
+              PR_TITLE="[競合あり-更新日時: $DATE_TIME]テンプレートリポジトリの更新による自動取り込み"
+              PR_BODY="  - #$ISSUE_NUMBER<br><br>\
+              **マージに競合が検出されました。**<br>\
+              このプルリクエストは[${{ github.repository_owner }}/$TEMPLATE_REPOSITORY](https://github.com/${{ github.repository_owner }}/$TEMPLATE_REPOSITORY/tree/main)リポジトリのmainブランチからの変更を取り込んでいます。<br>\
+              コンフリクト修正作業者は vscodeの検索から 「**>>>>>>>**」 を指定し対象ファイルを特定後、コンフリクトを修正してください。<br>\
+              レビュワーにてコンフリクト含めた変更点を確認してください。"
+            else
+              PR_TITLE="[競合なし-更新日時: $DATE_TIME]テンプレートリポジトリの更新による自動取り込み"
+              PR_BODY="  - #$ISSUE_NUMBER<br><br>マージに競合はありません。<br>\
+              このプルリクエストは[${{ github.repository_owner }}/$TEMPLATE_REPOSITORY](https://github.com/${{ github.repository_owner }}/$TEMPLATE_REPOSITORY/tree/main)リポジトリのmainブランチからの変更を取り込んでいます。<br>\
+              レビュワーにて変更点を確認してください。"
+            fi
+
+            # プルリクエストを作成
+            echo "Create Pull request..."
+            git fetch origin
+
+            set +e # エラーがあっても次のコマンドに進む
+            gh pr create \
+              --repo ${{ github.repository_owner }}/$PROJECT_REPOSITORY \
+              --base develop \
+              --head "${{ github.repository_owner }}:$SYNC_BRANCH" \
+              --title "$PR_TITLE" \
+              --body "$PR_BODY" \
+              --label "template-update,fix,patch release"
+            echo "Pull request created."
+            cd ..
+          done
+
+  #
+  # [親組織のみ] 対象テンプレートリポジトリから子テンプレートリポジトリの自動取り込みを実施
+  # tmpl-root[main反映後]: tmpl-web, tmpl-app, tmpl-infraを対象にする
+  # tmpl-web[main反映後]: tmpl-web-tw, tmpl-web-muiを対象にする
+  #
+  sync-template-repos:
+    needs: fetch-repos
+    runs-on: ubuntu-latest
+    if: ${{ needs.fetch-repos.outputs.template-repositories != '[]' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Sync to TEMPLATE Repositories
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          REPOSITORIES_LENGTH=$(echo '${{ needs.fetch-repos.outputs.template-repositories }}' | jq length)
+          echo "Length of template repositories: $REPOSITORIES_LENGTH"
+          echo '${{ needs.fetch-repos.outputs.template-repositories }}' | jq -c '.[]' | while read -r obj; do
+            # 各オブジェクトのキーと値を出力
+            TEMPLATE_REPOSITORY=$(echo "$obj" | jq -r '.name')
+            BASE_TEMPLATE=$(echo "$obj" | jq -r '.baseTemplateName')
+
+            # -------------------------------------------------------------------------
+            # tmpl-web, tmpl-web-tw, tmpl-web-mui, tmpl-app, tmpl-infraのみを対象にする
+            # -------------------------------------------------------------------------
+            if [[ "$TEMPLATE_REPOSITORY" =~ tmpl-root|tmpl-web|tmpl-web-tw|tmpl-web-mui|tmpl-app|tmpl-infra|web-sandbox|app-sandbox|infra-sandbox ]]; then
+              echo "templateRepository: $TEMPLATE_REPOSITORY"
+              echo "baseTemplateRepository: $BASE_TEMPLATE"
+
+              # 作業ディレクトリを作成
+              echo "Creating working directory..."
+              git clone https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository_owner }}/$TEMPLATE_REPOSITORY.git
+              cd $TEMPLATE_REPOSITORY
+
+              # -------------------------------------------------------------------------
+              # 最新更新を入れるため、既にあるissue,pullrequestをクローズ、branchを削除する
+              # -------------------------------------------------------------------------
+              echo "Closing issues and pull requests..."
+              issues=$(gh issue list --search "テンプレートリポジトリのリリースによる自動取り込み in:title" --json number --jq '.[].number')
+              echo "issues: $issues"
+              for issue in $issues; do
+                gh issue close $issue -c "テンプレートに最新更新が入るためクローズ"
+              done
+              prs=$(gh pr list --search "テンプレートリポジトリの更新による自動取り込み in:title" --state open --json number --jq '.[].number')
+              for pr in $prs; do
+                gh pr close $pr --delete-branch -c "テンプレートに最新更新が入るためクローズ"
+              done
+              echo "issues and pull requests closed."
+
+              # -------------------------------------------------------------------------
+              # 各ラベルをチェックし、存在しない場合には作成
+              # -------------------------------------------------------------------------
+              declare -A labels
+              labels["fix"]="Commit message type : Patch release|F0F055"
+              labels["patch release"]="SemVer Release : x.y.0 > x.y.1, 後方互換性のあるバグ修正や軽微な修正|F0F055"
+              labels["template-update"]="テンプレート元からの差分の取り込み|75015D"
+              for label in "${!labels[@]}"; do
+                IFS='|' read -r description color <<< "${labels[$label]}"
+                if ! gh label list --search "$label" | grep -q "$label"; then
+                  echo "Creating $label label with description '$description' and color '$color'..."
+                  gh label create "$label" --description "$description" --color "$color" --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY
+                else
+                  echo "$label label exists."
+                fi
+              done
+
+              # Git設定
+              git config --global user.name '${{ github.repository_owner }}-tmpl-bot'
+              git config --global user.email '${{ github.repository_owner }}-tmpl-bot@users.noreply.github.com'
+
+              # 現在の日時を取得
+              DATE_TIME=$(TZ=Asia/Tokyo date +'%Y%m%d%H%M%S')
+
+              # issueの詳細を定義
+              ISSUE_TITLE="[更新日時: $DATE_TIME] テンプレートリポジトリのリリースによる自動取り込み"
+              ISSUE_BODY="テンプレートリポジトリ[${{ github.repository_owner }}/$BASE_TEMPLATE](https://github.com/${{ github.repository_owner }}/$BASE_TEMPLATE/tree/main)のmainブランチがリリースされました。<br>\
+              自動取り込みとなるため、レビュワー側でコンフリクト含めた変更点のプルリクエストを確認してください。"
+
+              # 子テンプレートリポジトリにissueを作成
+              echo "Creating issue in repository..."
+              NEW_ISSUE_URL=$(gh issue create \
+                --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY \
+                --title "$ISSUE_TITLE" \
+                --body "$ISSUE_BODY" \
+                --label "template-update,fix,patch release")
+
+              # Issue番号を抽出
+              ISSUE_NUMBER=$(echo $NEW_ISSUE_URL | grep -oP '[^/]+$' | tr -dc '0-9')
+              echo "Issue number: $ISSUE_NUMBER"
+
+              # 子テンプレートリポジトリのissueから、developブランチをベースに新しい作業ブランチを切る
+              GH_ISSUE_DEVELOP=$(gh issue develop \
+                --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY \
+                $ISSUE_NUMBER --base develop)
+              echo "GH_ISSUE_DEVELOP: $GH_ISSUE_DEVELOP"
+              SYNC_BRANCH=$(echo $GH_ISSUE_DEVELOP | awk -F'/' '{print $NF}')
+              echo "Branch name: $SYNC_BRANCH"
+
+              # ブランチ作成
+              echo "Creating branch..."
+              git checkout -b $SYNC_BRANCH
+              echo "Branch created: $SYNC_BRANCH"
+
+              echo "Adding parent template remote repository..."
+              git remote add $BASE_TEMPLATE https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository_owner }}/$BASE_TEMPLATE.git
+              git fetch $BASE_TEMPLATE main
+              echo "Remote repository added: $BASE_TEMPLATE"
+
+              # mainブランチをpullし、コンフリクトが発生した場合でも "強制的に" マージを進める
+              MERGE_OUTPUT=$(git merge $BASE_TEMPLATE/main --allow-unrelated-histories --no-edit || true)
+              echo "-----------MERGE_OUTPUT-----------"
+              echo "$MERGE_OUTPUT"
+
+              # コンフリクトが発生したファイルを全てステージングエリアに追加
+              git add .
+
+              # 強制的なコミットを行い、コンフリクトのマーカーを含む状態で変更を保存
+              git commit -m "テンプレートリポジトリ更新による自動取り込み" --no-verify  || true
+              echo "Commit completed."
+
+              # ブランチを子テンプレートリポジトリのリモートにプッシュ
+              git push --set-upstream origin $SYNC_BRANCH || true
+              echo "Push completed."
+
+              # マージ出力結果から「CONFLICT」文字列を検索
+              if echo "$MERGE_OUTPUT" | grep -q "CONFLICT"; then
+                echo "Merge conflict detected."
+                CONFLICT="true"
+              else
+                echo "No merge conflicts."
+                CONFLICT="false"
+              fi
+
+              # 前のステップからの出力に基づいてプルリクエストのタイトルと本文を設定
+              if [ $CONFLICT == "true" ]; then
+                PR_TITLE="[競合あり-更新日時: $DATE_TIME]テンプレートリポジトリの更新による自動取り込み"
+                PR_BODY="  - #$ISSUE_NUMBER<br><br>\
+                **マージに競合が検出されました。**<br>\
+                このプルリクエストは[${{ github.repository_owner }}/$BASE_TEMPLATE](https://github.com/${{ github.repository_owner }}/$BASE_TEMPLATE/tree/main)リポジトリのmainブランチからの変更を取り込んでいます。<br>\
+                コンフリクト修正作業者は vscodeの検索から 「**>>>>>>>**」 を指定し対象ファイルを特定後、コンフリクトを修正してください。<br>\
+                レビュワーにてコンフリクト含めた変更点を確認してください。"
+              else
+                PR_TITLE="[競合なし-更新日時: $DATE_TIME]テンプレートリポジトリの更新による自動取り込み"
+                PR_BODY="  - #$ISSUE_NUMBER<br><br>マージに競合はありません。<br>\
+                このプルリクエストは[${{ github.repository_owner }}/$BASE_TEMPLATE](https://github.com/${{ github.repository_owner }}/$BASE_TEMPLATE/tree/main)リポジトリのmainブランチからの変更を取り込んでいます。<br>\
+                レビュワーにて変更点を確認してください。"
+              fi
+
+              # プルリクエストを作成
+              echo "Create Pull request..."
+              git fetch origin
+
+              set +e # エラーがあっても次のコマンドに進む
+              gh pr create \
+                --repo ${{ github.repository_owner }}/$TEMPLATE_REPOSITORY \
+                --base develop \
+                --head "${{ github.repository_owner }}:$SYNC_BRANCH" \
+                --title "$PR_TITLE" \
+                --body "$PR_BODY" \
+                --label "template-update,fix,patch release"
+              echo "Pull request created."
+
+              cd ..
+            fi
+          done
