@@ -1,0 +1,5 @@
+# コードオーナーに設定したユーザーやチームは
+# Pull Request作成時に自動的でReviewersに設定されます。
+
+# 全てのファイルのコードオーナー
+* @Ambient-Lab/ambient-dev-private
