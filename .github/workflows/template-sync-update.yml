@@ -86,7 +86,7 @@ jobs:
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-tw`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-web-mui`) {
             } else if (templateRepoName === `${orgPrefix}-tmpl-app`) {
-            } else if (templateRepoName === "${orgPrefix}-tmpl-infra") {
+            } else if (templateRepoName === `${orgPrefix}-tmpl-infra`) {
             } else {
               // プロジェクトリポジトリであれば処理中断
               return;
