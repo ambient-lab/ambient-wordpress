@@ -66,10 +66,15 @@ jobs:
             const templateRepoName = context.repo.repo;
             const orgPrefix = templateRepoName.split("-")[0]
 
+            //環境変数から任意のテンプレート紐付け情報を取得
+            const templateRepositoryMappings = JSON.parse(
+              `${{ vars.TEMPLATE_REPOSITORIES_MAPPINGS }}` || '{}'
+            )[templateRepoName] || {}
+
             let endCursor = null;
             let hasNextPage = true;
-            const projectRepositories = [];
-            const templateRepositories = [];
+            const projectRepositories = templateRepositoryMappings["project_repositories"] || [];
+            const templateRepositories = templateRepositoryMappings["template_repositories"] || [];
 
             // テンプレートリポジトリ名によって処理を分岐
             if (templateRepoName === `${orgPrefix}-tmpl-root`) {
