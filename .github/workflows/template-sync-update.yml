@@ -23,7 +23,7 @@ jobs:
       - name: Check for secrets
         id: check
         run: |
-          if [[ -n "${{ secrets.APP_ID }}" && -n "${{ secrets.PRIVATE_KEY }}" ]]; then
+          if [[ -n "${{ secrets.APP_ID_TMPL }}" && -n "${{ secrets.PRIVATE_KEY_TMPL }}" ]]; then
             echo "result=true" >> $GITHUB_OUTPUT
           else
             echo "result=false" >> $GITHUB_OUTPUT
@@ -46,13 +46,13 @@ jobs:
       - name: Generate token
         id: app-token
         uses: actions/create-github-app-token@v1
-        if: ${{ env.APP_ID != '' }} && ${{ env.PRIVATE_KEY != '' }}
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
         env:
-          APP_ID: ${{ secrets.APP_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
         with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
           owner: ${{ github.repository_owner }}
       - name: Fetch Repositories
         id: fetch-tmpl-repos
@@ -176,8 +176,8 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
           owner: ${{ github.repository_owner }}
       - name: Sync to PROJECT Repositories
         env:
@@ -348,8 +348,8 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
           owner: ${{ github.repository_owner }}
       - name: Sync to TEMPLATE Repositories
         env:
