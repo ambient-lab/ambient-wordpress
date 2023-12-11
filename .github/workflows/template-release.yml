@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Get Milestone on develop Merge
         id: get_milestone
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             console.log('現在のマイルストーンを取得します')
@@ -62,7 +62,7 @@ jobs:
             console.log(milestone.data)
             return milestone.data
       - name: Add develop PR to Milestone
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             console.log("マイルストーンとPRを紐づけます")
@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Get PR Milestone
         id: get_milestone
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             console.log('現在のマイルストーンを取得します')
@@ -111,7 +111,7 @@ jobs:
               return false
             }
       - name: Close Previous Milestone
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: ${{ steps.get_milestone.outputs.result }} != false
         with:
           script: |
@@ -129,7 +129,7 @@ jobs:
             console.log(result)
       - name: Create Next Milestone
         id: create_milestone
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             console.log('次回のマイルストーンを作成します')
