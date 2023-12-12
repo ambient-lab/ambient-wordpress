@@ -65,7 +65,11 @@
         "mosapride.zenkaku",
         "aaron-bond.better-comments",
         "shardulm94.trailing-spaces",
+<<<<<<< HEAD
         "bungcip.better-toml",
+=======
+        "tamasfe.even-better-toml",
+>>>>>>> ambient-tmpl-root/main
         "mutantdino.resourcemonitor",
         "shd101wyy.markdown-preview-enhanced",
         "mikestead.dotenv",

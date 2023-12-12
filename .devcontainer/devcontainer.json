@@ -9,13 +9,21 @@
       "version": "2.13.1"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
+<<<<<<< HEAD
       "version": "2.32.0"
+=======
+      "version": "2.38.0"
+>>>>>>> ambient-tmpl-root/main
     },
     "ghcr.io/eitsupi/devcontainer-features/jq-likes:1.0.1": {
       "jqVersion": "jq-1.6"
     },
     "ghcr.io/devcontainers/features/python:1": {
+<<<<<<< HEAD
       "version": "3.9.17"
+=======
+      "version": "3.10.13"
+>>>>>>> ambient-tmpl-root/main
     },
     "./features/root": {},
     // custom feature
