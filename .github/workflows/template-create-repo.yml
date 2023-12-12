@@ -1,0 +1,355 @@
+# -------------------------------------------------------------------
+# テンプレートから作成したリポジトリの初期設定を行う
+# -------------------------------------------------------------------
+name: Setup Create Repository
+
+on:
+  create:
+  workflow_dispatch:
+
+jobs:
+  #
+  # 環境変数の存在確認
+  #
+  check-secrets:
+    runs-on: ubuntu-latest
+    if: (github.ref_type == 'branch' && github.ref == 'refs/heads/develop') || github.event_name == 'workflow_dispatch'
+    outputs:
+      has-secrets: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check for secrets
+        id: check
+        run: |
+          if [[ -n "${{ secrets.APP_ID_TMPL }}" && -n "${{ secrets.PRIVATE_KEY_TMPL }}" ]]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+  #
+  # main, developブランチ用意(存在しなければ)
+  #
+  create-ref-branch:
+    needs: [check-secrets]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Check if main branch exists
+        id: check_main_branch
+        run: |
+          if git ls-remote --heads origin main | grep -q main; then
+            echo "Main branch already exists."
+            echo "has-main=true" >> $GITHUB_ENV
+          else
+            echo "Main branch does not exist."
+            echo "has-main=false" >> $GITHUB_ENV
+          fi
+      - name: Check if develop branch exists
+        id: check_develop_branch
+        run: |
+          if git ls-remote --heads origin develop | grep -q develop; then
+            echo "Develop branch already exists."
+            echo "has-develop=true" >> $GITHUB_ENV
+          else
+            echo "Develop branch does not exist."
+            echo "has-develop=false" >> $GITHUB_ENV
+          fi
+      - name: Create develop branch from main
+        if: env.has-main == 'true' && env.has-develop == 'false'
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global user.name '${{ github.repository_owner }}-tmpl-bot'
+          git config --global user.email '${{ github.repository_owner }}-tmpl-bot@users.noreply.github.com'
+          git fetch origin
+          git checkout -b develop origin/main
+          git push origin develop
+      - name: Create main branch from develop
+        if: env.has-main == 'false' && env.has-develop == 'true'
+        run: |
+          git config --global user.name '${{ github.repository_owner }}-tmpl-bot'
+          git config --global user.email '${{ github.repository_owner }}-tmpl-bot@users.noreply.github.com'
+          git fetch origin
+          git checkout -b main origin/develop
+          git push origin main
+
+  #
+  # リポジトリの一般設定
+  #
+  setup-repository-general-settings:
+    needs: [check-secrets, create-ref-branch]
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
+      - name: Setup repository general settings
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.repos.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: context.repo.repo,
+              allow_merge_commit: true,
+              allow_squash_merge: false,
+              allow_rebase_merge: false,
+              delete_branch_on_merge: true,
+              has_issues: true,
+              has_projects: true,
+              has_discussions: true,
+              has_wiki: true,
+              is_template: false,
+              web_commit_signoff_required: false,
+              allow_auto_merge: true,
+              allow_update_branch: true
+            });
+
+  #
+  # リポジトリのブランチ保護設定
+  #
+  setup-branch-protection-settings:
+    needs: [check-secrets, create-ref-branch]
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
+      - name: Setup develop branch protection
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'develop',
+              required_status_checks: {
+                strict: true,
+                contexts: []
+              },
+              enforce_admins: false,
+              required_pull_request_reviews: {
+                required_approving_review_count: 1,
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: false,
+                require_last_push_approval: true,
+                bypass_pull_request_allowances: {
+                  users: [],
+                  teams: [],
+                  apps: []
+                },
+                dismissal_restrictions: {
+                  users: [],
+                  teams: [],
+                  apps: []
+                }
+              },
+              restrictions: {
+                users: [],
+                teams: [],
+                apps: []
+              },
+              required_linear_history: false,
+              allow_force_pushes: false,
+              allow_deletions: false,
+              block_creations: true,
+              required_conversation_resolution: true,
+              allow_fork_syncing: false
+            })
+      - name: Setup main branch protection
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main',
+              required_status_checks: {
+                strict: true,
+                contexts: []
+              },
+              enforce_admins: false,
+              required_pull_request_reviews: {
+                required_approving_review_count: 1,
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: false,
+                require_last_push_approval: true,
+                bypass_pull_request_allowances: {
+                  users: [],
+                  teams: [],
+                  apps: []
+                },
+                dismissal_restrictions: {
+                  users: [],
+                  teams: [],
+                  apps: []
+                }
+              },
+              restrictions: {
+                users: [],
+                teams: [],
+                apps: []
+              },
+              required_linear_history: false,
+              allow_force_pushes: false,
+              allow_deletions: false,
+              block_creations: true,
+              required_conversation_resolution: true,
+              allow_fork_syncing: false
+            })
+
+  #
+  # リポジトリのブランチRuleSet設定
+  #
+  setup-primary-ruleset-settings:
+    needs: [check-secrets, create-ref-branch]
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
+      - name: Extract owner and repo name
+        id: repo
+        run: |
+          echo "OWNER=$(echo ${{ github.repository }} | cut -d'/' -f1)" >> $GITHUB_ENV
+          echo "REPO=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
+      - name: Setup branch protection for default and main branches
+        run: |
+          curl -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/rulesets \
+          -d '{
+            "name": "primary-ruleset",
+            "target": "branch",
+            "enforcement": "active",
+            "bypass_actors": [
+              {
+                "actor_id": 5,
+                "actor_type": "RepositoryRole",
+                "bypass_mode": "pull_request"
+              },
+              {
+                "actor_id": 2,
+                "actor_type": "RepositoryRole",
+                "bypass_mode": "pull_request"
+              }
+            ],
+            "conditions": {
+              "ref_name": {
+                "include": [
+                  "~DEFAULT_BRANCH",
+                  "refs/heads/main"
+                ],
+                "exclude": []
+              }
+            },
+            "rules": [
+              {
+                "type": "non_fast_forward"
+              },
+              {
+                "type": "pull_request",
+                "parameters": {
+                  "dismiss_stale_reviews_on_push": true,
+                  "require_code_owner_review": false,
+                  "require_last_push_approval": false,
+                  "required_approving_review_count": 1,
+                  "required_review_thread_resolution": true
+                }
+              }
+            ]
+          }'
+
+  #
+  # リポジトリのブランチEnvrionment設定
+  #
+  setup-branch-environment-settings:
+    needs: [check-secrets, create-ref-branch]
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
+      - name: Setup branch envrionment for develop branches
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.repos.createOrUpdateEnvironment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment_name: "develop",
+              wait_timer: 15,
+              prevent_self_review: false,
+              reviewers: null,
+              deployment_branch_policy: {
+                protected_branches: true,
+                custom_branch_policies: false
+              }
+            });
+      - name: Setup branch envrionment for main branches
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.repos.createOrUpdateEnvironment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment_name: "main",
+              wait_timer: 15,
+              prevent_self_review: false,
+              reviewers: null,
+              deployment_branch_policy: {
+                protected_branches: true,
+                custom_branch_policies: false
+              }
+            });
