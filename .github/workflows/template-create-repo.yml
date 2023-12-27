@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------
 # テンプレートから作成したリポジトリの初期設定を行う
 # -------------------------------------------------------------------
-name: Setup Create Repository
+name: Setup Repository
 
 on:
   create:
@@ -84,6 +84,130 @@ jobs:
           git fetch origin
           git checkout -b main origin/develop
           git push origin main
+  #
+  # アクセス権限のチーム追加
+  # 
+  setup-manage-access:
+    needs: [check-secrets, create-ref-branch]
+    if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.attach-tl-team.outputs.tl-team-slug }}
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        if: ${{ env.APP_ID_TMPL != '' }} && ${{ env.PRIVATE_KEY_TMPL != '' }}
+        env:
+          APP_ID_TMPL: ${{ secrets.APP_ID_TMPL }}
+          PRIVATE_KEY_TMPL: ${{ secrets.PRIVATE_KEY_TMPL }}
+        with:
+          app-id: ${{ secrets.APP_ID_TMPL }}
+          private-key: ${{ secrets.PRIVATE_KEY_TMPL }}    
+      - name: Attach TL Team
+        id: attach-tl-team
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # ハイフンで文字列を分割
+          IFS='-' read -ra parts <<< "${{ github.event.repository.name }}"
+          # リポジトリ名が条件に合致するか確認
+          if [[ "${parts[1]}" == "ref" 
+              || "${parts[1]}" == "tmpl" 
+              || "${parts[1]}" == "web" 
+              || "${parts[1]}" == "backend" 
+              || "${parts[1]}" == "cms" 
+              || "${parts[1]}" == "front" 
+              || "${parts[1]}" == "infra" 
+              ]]; then
+              TEAM_PREFIX="${parts[0]}"
+          else
+              TEAM_PREFIX="${parts[0]}-${parts[1]}"
+          fi
+          echo "TEAM_PREFIX: $TEAM_PREFIX"
+
+          TL_TEAM_ID=$(gh api graphql -f query='{
+            organization(login: "${{ github.repository_owner }}") {
+              team(slug: "'"$TEAM_PREFIX-private"'") {
+                id
+              }
+            }
+          }' | jq '.data.organization.team.id')
+          echo "TL_TEAM_ID: $TL_TEAM_ID"
+
+          if [[ $TL_TEAM_ID != "null" ]]; then
+            REPOSITORY_ID=$(gh api graphql -f query='{
+              repository(owner: "${{ github.repository_owner }}", name: "${{ github.event.repository.name }}") {
+                id
+              }
+            }' | jq '.data.repository.id')
+            echo "REPOSITORY_ID: $REPOSITORY_ID"
+            
+            # MAINTAIN権限に変更
+            gh api graphql -f query='
+            mutation UpdateTeamsRepository($TL_TEAM_ID: ID!, $REPOSITORY_ID: ID!) {
+              updateTeamsRepository(input: {teamIds: [$TL_TEAM_ID], repositoryId: $REPOSITORY_ID, permission: MAINTAIN}) {
+                clientMutationId
+              }
+            }' -f TL_TEAM_ID="$TL_TEAM_ID" -f REPOSITORY_ID="$REPOSITORY_ID"
+
+            echo "tl-team-slug=$TEAM_PREFIX-private" >> "$GITHUB_OUTPUT"
+            echo "TL Team SetUp!!"
+          else
+            echo "tl-team-slug=''" >> "$GITHUB_OUTPUT"
+            echo "TL Team Not SetUp!!"
+          fi
+
+      - name: Attach DEV Team
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # ハイフンで文字列を分割
+          IFS='-' read -ra parts <<< "${{ github.event.repository.name }}"
+          # リポジトリ名が条件に合致するか確認
+          if [[ "${parts[1]}" == "ref" 
+              || "${parts[1]}" == "tmpl" 
+              || "${parts[1]}" == "web" 
+              || "${parts[1]}" == "backend" 
+              || "${parts[1]}" == "cms" 
+              || "${parts[1]}" == "front" 
+              || "${parts[1]}" == "infra" 
+              ]]; then
+              TEAM_PREFIX="${parts[0]}"
+          else
+              TEAM_PREFIX="${parts[0]}-${parts[1]}"
+          fi
+          echo "TEAM_PREFIX: $TEAM_PREFIX"
+
+          DEV_TEAM_ID=$(gh api graphql -f query='{
+            organization(login: "${{ github.repository_owner }}") {
+              team(slug: "'"$TEAM_PREFIX-public"'") {
+                id
+              }
+            }
+          }' | jq '.data.organization.team.id')
+          echo "DEV_TEAM_ID: $DEV_TEAM_ID"
+
+          if [[ $DEV_TEAM_ID != "null" ]]; then
+            REPOSITORY_ID=$(gh api graphql -f query='{
+              repository(owner: "${{ github.repository_owner }}", name: "${{ github.event.repository.name }}") {
+                id
+              }
+            }' | jq '.data.repository.id')
+            echo "REPOSITORY_ID: $REPOSITORY_ID"
+            
+            # MAINTAIN権限に変更
+            gh api graphql -f query='
+            mutation UpdateTeamsRepository($DEV_TEAM_ID: ID!, $REPOSITORY_ID: ID!) {
+              updateTeamsRepository(input: {teamIds: [$DEV_TEAM_ID], repositoryId: $REPOSITORY_ID, permission: WRITE}) {
+                clientMutationId
+              }
+            }' -f DEV_TEAM_ID="$DEV_TEAM_ID" -f REPOSITORY_ID="$REPOSITORY_ID"
+
+            echo "DEV Team SetUp!!"
+          else
+            echo "DEV Team Not SetUp!!"
+          fi
 
   #
   # リポジトリの一般設定
@@ -130,7 +254,7 @@ jobs:
   # リポジトリのブランチ保護設定
   #
   setup-branch-protection-settings:
-    needs: [check-secrets, create-ref-branch]
+    needs: [check-secrets, create-ref-branch, setup-manage-access]
     if: ${{ needs.check-secrets.outputs.has-secrets == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -146,9 +270,12 @@ jobs:
           private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
       - name: Setup develop branch protection
         uses: actions/github-script@v6
+        env:
+          TL_TEAM_SLUG_OUTPUT: ${{needs.setup-manage-access.outputs.output1}}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
+            console.log("TL_TEAM_SLUG_OUTPUT", process.env.TL_TEAM_SLUG_OUTPUT);
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -170,7 +297,7 @@ jobs:
                 },
                 dismissal_restrictions: {
                   users: [],
-                  teams: [],
+                  teams: [process.env.TL_TEAM_SLUG_OUTPUT],
                   apps: []
                 }
               },
@@ -188,9 +315,12 @@ jobs:
             })
       - name: Setup main branch protection
         uses: actions/github-script@v6
+        env:
+          TL_TEAM_SLUG_OUTPUT: ${{needs.setup-manage-access.outputs.output1}}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
+            console.log("TL_TEAM_SLUG_OUTPUT", process.env.TL_TEAM_SLUG_OUTPUT);
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -212,7 +342,7 @@ jobs:
                 },
                 dismissal_restrictions: {
                   users: [],
-                  teams: [],
+                  teams: [process.env.TL_TEAM_SLUG_OUTPUT],
                   apps: []
                 }
               },
@@ -319,7 +449,7 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID_TMPL }}
           private-key: ${{ secrets.PRIVATE_KEY_TMPL }}
-      - name: Setup branch envrionment for develop branches
+      - name: Setup branch envrionment for develop & main branches
         uses: actions/github-script@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -327,24 +457,7 @@ jobs:
             await github.rest.repos.createOrUpdateEnvironment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              environment_name: "develop",
-              wait_timer: 15,
-              prevent_self_review: false,
-              reviewers: null,
-              deployment_branch_policy: {
-                protected_branches: true,
-                custom_branch_policies: false
-              }
-            });
-      - name: Setup branch envrionment for main branches
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            await github.rest.repos.createOrUpdateEnvironment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              environment_name: "main",
+              environment_name: "develop&main",
               wait_timer: 15,
               prevent_self_review: false,
               reviewers: null,
