@@ -1,0 +1,49 @@
+# -------------------------------------------------------------------
+# テンプレートで用意してるIssue(PRも含める)に特化した処理はここですべて定義します
+# -------------------------------------------------------------------
+name: Template Basic Issue
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+  issues:
+    types:
+      - opened
+      - reopened
+
+permissions:
+  issues: write
+  pull-requests: write
+
+env:
+  github-token: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  #
+  # IssueとPRのAssigneeの自動設定
+  #  Issue・PRのオープンとリオープン時に、Assigneeがいなければ自動で設定する
+  #
+  auto-fill-assignee:
+    if: github.event_name == 'issues' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            console.log("EventName : " + context.eventName)
+            const data = context.eventName == "pull_request" ? context.payload.pull_request : context.payload.issue
+            if (data.assignees.length == 0){
+              console.log('assign')
+              try{
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: data.number, assignees: `${{ github.actor }}`
+                });
+              }catch(e){
+                console.log(`assign error\n ${e}`)
+              }
+            }else{
+              console.log('skip')
+            }
