@@ -36,10 +36,14 @@ jobs:
             const data = context.eventName == "pull_request" ? context.payload.pull_request : context.payload.issue
             if (data.assignees.length == 0){
               console.log('assign')
-              github.rest.issues.addAssignees({
-                owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: data.number, assignees: `${{ github.actor }}`
-              });
+              try{
+                await github.rest.issues.addAssignees({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: data.number, assignees: `${{ github.actor }}`
+                });
+              }catch(e){
+                console.log(`assign error\n ${e}`)
+              }
             }else{
               console.log('skip')
             }
